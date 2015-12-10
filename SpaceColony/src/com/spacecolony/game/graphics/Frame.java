@@ -15,6 +15,7 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -31,11 +32,16 @@ public class Frame extends Application {
     /**
      * The WIDTH of the Application
      */
-    public static final int WIDTH = 400;
+    public static final int WIDTH = 150;
     /**
      * The HEIGHT of the application
      */
-    public static final int HEIGHT = 500;
+    public static final int HEIGHT = 200;
+    
+    /**
+     * The pixel SCALE if the game
+     */
+    public static final int SCALE = 3;
 
     private DoubleProperty fpsFraction = new SimpleDoubleProperty(0);
 
@@ -56,6 +62,7 @@ public class Frame extends Application {
             double dt = (now - lastTime)/1000000000.;
             lastTime = now;
             fpsFraction.set(1/dt);
+            GraphicsContext gc = canvas.getGraphicsContext2D();
             game.render(canvas.getGraphicsContext2D());
         }
     };
@@ -70,7 +77,7 @@ public class Frame extends Application {
         Group root = new Group();
         Scene sceme = new Scene(root);
 
-        canvas = new Canvas(WIDTH, HEIGHT);
+        canvas = new Canvas(WIDTH * SCALE, HEIGHT * SCALE);
         root.getChildren().add(canvas);
 
         Label fps = new Label();
