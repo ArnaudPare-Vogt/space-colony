@@ -21,15 +21,15 @@ public class Game {
      */
     public static final long UPDATE_RATE = 16666666;
 
-    private Vec2 size;
+    private final Vec2 size;
 
     private Vec2 pos = new Vec2();
 
     private Thread updateThread;
 
-    private Runnable r = () -> {
+    private final Runnable updateLoop = () -> {
         long lastTime = System.nanoTime();
-        long dt = 0;
+        long dt;
         while (!updateThread.isInterrupted()) {
             if ((dt = System.nanoTime() - lastTime) > UPDATE_RATE) {
                 lastTime = System.nanoTime();
@@ -38,15 +38,25 @@ public class Game {
         }
     };
 
+    /**
+     * Creates a new game width the given size
+     * @param size the size of the game
+     */
     public Game(Vec2 size) {
         this.size = size;
-        updateThread = new Thread(r, "Update Loop");
+        updateThread = new Thread(updateLoop, "Update Loop");
     }
 
+    /**
+     * Starts the game by starting the update loop
+     */
     public void start() {
         updateThread.start();
     }
 
+    /**
+     * Stops the game by interrupting the update loop
+     */
     public void stop() {
         updateThread.interrupt();
     }

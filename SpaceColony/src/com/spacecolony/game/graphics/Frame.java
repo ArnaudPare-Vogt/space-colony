@@ -12,11 +12,12 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -27,12 +28,19 @@ import javafx.stage.WindowEvent;
  */
 public class Frame extends Application {
 
+    /**
+     * The WIDTH of the Application
+     */
     public static final int WIDTH = 400;
+    /**
+     * The HEIGHT of the application
+     */
     public static final int HEIGHT = 500;
 
     private DoubleProperty fpsFraction = new SimpleDoubleProperty(0);
 
     private Canvas canvas;
+    private Stage window;
 
     private Game game;
 
@@ -40,7 +48,6 @@ public class Frame extends Application {
 
         public static final double FPS_TARGET = 60;
         private static final double REFRESH_RATE_TARGET = 1 / FPS_TARGET;
-        private double refreshRateCuttent = 0;
 
         private long lastTime = 0;
 
@@ -53,8 +60,13 @@ public class Frame extends Application {
         }
     };
 
+    /**
+     * Starts the application by initialyzing all the resources.
+     * @param primaryStage the main stage
+     */
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
+        window = primaryStage;
         Group root = new Group();
         Scene sceme = new Scene(root);
 
@@ -73,9 +85,23 @@ public class Frame extends Application {
             game.stop();
         });
         
+        sceme.setOnKeyPressed((KeyEvent event) -> {
+            keyPressed(event);
+        });
+        
         primaryStage.show();
         timer.start();
         game.start();
+    }
+    
+    private void close(){
+        window.fireEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSE_REQUEST));
+    }
+    
+    private void keyPressed(KeyEvent eve){
+        if(eve.getCode() == KeyCode.ESCAPE){
+            close();
+        }
     }
 
 }
