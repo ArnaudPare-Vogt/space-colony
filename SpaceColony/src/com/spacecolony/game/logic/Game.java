@@ -5,6 +5,8 @@
  */
 package com.spacecolony.game.logic;
 
+import com.spacecolony.game.logic.gameobject.CubeObject;
+import com.spacecolony.game.logic.gameobject.GameObject;
 import com.spacecolony.game.util.math.Vec2;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -23,7 +25,7 @@ public class Game {
 
     private final Vec2 size;
 
-    private Vec2 pos = new Vec2();
+    private GameObject go = new CubeObject(new Vec2(30));
 
     private Thread updateThread;
 
@@ -33,13 +35,14 @@ public class Game {
         while (!updateThread.isInterrupted()) {
             if ((dt = System.nanoTime() - lastTime) > UPDATE_RATE) {
                 lastTime = System.nanoTime();
-                update(dt);
+                update(dt / 1000000000.f);
             }
         }
     };
 
     /**
      * Creates a new game width the given size
+     *
      * @param size the size of the game
      */
     public Game(Vec2 size) {
@@ -69,12 +72,19 @@ public class Game {
     public void render(GraphicsContext gc) {
         gc.setFill(Color.WHITE);
         gc.fillRect(0, 0, size.x, size.y);
+        gc.save();
         gc.setFill(Color.BLACK);
-        gc.fillRect(pos.x, pos.y, 10, 10);
+        go.render(gc);
+        gc.restore();
     }
 
-    private void update(long dt) {
-        pos.x += 1;
+    /**
+     * Updates the game
+     *
+     * @param dt the delta-time in seconds
+     */
+    private void update(float dt) {
+        go.update(dt);
     }
 
 }
