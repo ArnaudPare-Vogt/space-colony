@@ -29,6 +29,8 @@ import org.newdawn.slick.SlickException;
  */
 public class SpriteSheet{
     
+    public static final SpriteSheet TEST = new SpriteSheet("Images/Test.png");
+    
     private static final ExceptionThrower THROWER = new ExceptionThrower();
 
     private Image image;

@@ -24,6 +24,8 @@ import org.newdawn.slick.Image;
  */
 public class Sprite {
     
+    public static final Sprite DEFAULT_TEST = new Sprite(SpriteSheet.TEST, 0, 0, 16, 16);
+    
     private Image image;
 
     public Sprite(SpriteSheet ss, int x, int y, int w, int h) {

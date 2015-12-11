@@ -16,6 +16,8 @@
  */
 package com.spacecolony.game.data;
 
+import com.spacecolony.game.graphics.Sprite;
+
 /**
  *
  * @author 1448607
@@ -26,6 +28,10 @@ public class Tile {
 
     public Tile(TileType tileType) {
         this.tileType = tileType;
+    }
+    
+    public Sprite getSprite(){
+        return tileType.getSprite();
     }
 
     public TileType getTileType() {

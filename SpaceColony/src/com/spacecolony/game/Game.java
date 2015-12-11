@@ -17,9 +17,14 @@
 package com.spacecolony.game;
 
 import com.spacecolony.game.data.Level;
-import com.spacecolony.game.graphics.Sprite;
-import com.spacecolony.game.graphics.SpriteSheet;
+import com.spacecolony.game.data.input.PlayerInput;
+import com.spacecolony.game.gui.UIButton;
+import com.spacecolony.game.gui.UIElement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import org.newdawn.slick.BasicGame;
+import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
@@ -36,13 +41,14 @@ public class Game extends BasicGame {
     public static final int WIDTH = 200;
     public static final int HEIGHT = 150;
     
-
-    private SpriteSheet test;
     private Level lvl;
 
     private Vector2f pos = new Vector2f(0, 0);
-
     private Vector2f lastMousePos = new Vector2f(0, 0);
+    
+    private PlayerInput plIn = new PlayerInput();
+    
+    private List<UIElement> uiElements = new ArrayList<>();
 
     public Game(String title) {
         super(title);
@@ -50,8 +56,11 @@ public class Game extends BasicGame {
 
     @Override
     public void init(GameContainer container) throws SlickException {
-        test = new SpriteSheet("Images/Test.png");
-        lvl = new Level(15, 10, test);
+        lvl = new Level(20, 15, new Random());
+        UIButton b = new UIButton("TEST");
+        b.setPos(new Vector2f(100, 100));
+        b.setOnClickAction(()->{System.out.println("HAHAHAHAHA");});
+        uiElements.add(b);
     }
 
     @Override
@@ -59,8 +68,9 @@ public class Game extends BasicGame {
         float dt = delta / 1000.f;
 
         Input input = container.getInput();
+        plIn.processInput(input);
         
-        if(input.isMousePressed(Input.MOUSE_LEFT_BUTTON)){
+        if(plIn.wasLeftMousePressed()){
             lastMousePos.x = input.getMouseX();
             lastMousePos.y = input.getMouseY();
         }
@@ -72,27 +82,55 @@ public class Game extends BasicGame {
             lastMousePos.x = input.getMouseX();
             lastMousePos.y = input.getMouseY();
             
-            pos.x += dx/SCALE;
-            pos.y += dy/SCALE;
+            pos.x -= dx/SCALE;
+            pos.y -= dy/SCALE;
             
-            if(pos.x > 0){
+            if(pos.x < 0){
                 pos.x = 0;
             }
-            if(pos.y > 0){
+            if(pos.x > (lvl.getWidth()) * 16 - WIDTH){
+                pos.x = (lvl.getWidth()) * 16 - WIDTH;
+            }
+            if(pos.y < 0){
                 pos.y = 0;
+            }
+            if(pos.y > lvl.getHeight() * 16 - HEIGHT){
+                pos.y = lvl.getHeight() * 16 - HEIGHT;
             }
         }
 
         if (input.isKeyDown(Input.KEY_ESCAPE)) {
             container.exit();
         }
+        
+        for (UIElement uiElement : uiElements) {
+            if(uiElement.getBoundingBox().contains(input.getMouseX(), input.getMouseY())){
+                uiElement.mouseIn();
+                if(plIn.wasLeftMousePressed()){
+                    uiElement.clicked();
+                }else if(plIn.wasLeftMouseRelesed()){
+                    uiElement.mouseReleased();
+                }
+            }else{
+                uiElement.mouseOut();
+            }
+        }
     }
 
     @Override
     public void render(GameContainer container, Graphics g) throws SlickException {
+        g.pushTransform();
         g.scale(SCALE, SCALE);
-        g.translate(pos.x, pos.y);
+        g.setColor(Color.gray);
+        g.fillRect(0, 0, WIDTH, HEIGHT);
+        g.translate(-pos.x, -pos.y);
         lvl.render(g, pos, new Vector2f(WIDTH, HEIGHT));
+        g.popTransform();
+        
+        for (UIElement uiElement : uiElements) {
+            uiElement.render(g);
+        }
+        
     }
 
 }

@@ -18,6 +18,7 @@ package com.spacecolony.game.data;
 
 import com.spacecolony.game.graphics.Sprite;
 import com.spacecolony.game.graphics.SpriteSheet;
+import java.util.Random;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Vector2f;
 
@@ -31,25 +32,17 @@ public class Level {
 
     private Tile[][] tiles;
 
-    private TileType tt;
-
-    public Level(int width, int height, SpriteSheet ss) {
+    public Level(int width, int height, Random rnd) {
         this.width = width;
         this.height = height;
 
-        tt = new TileType(new Sprite(ss, 0, 0, 16, 16));
-
         tiles = new Tile[width][height];
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                tiles[i][j] = new Tile(tt);
-            }
-        }
+        tiles[rnd.nextInt(width)][rnd.nextInt(height)] = new Tile(TileType.DEFAULT_TYPE);
     }
 
     public void render(Graphics g, Vector2f pos, Vector2f port) {
-        int bx = -(int) pos.x / 16;
-        int by = -(int) pos.y / 16;
+        int bx = (int) pos.x / 16;
+        int by = (int) pos.y / 16;
         int ex = bx + (int) port.x / 16 + 2;
         int ey = by + (int) port.y / 16 + 2;
         
@@ -58,8 +51,18 @@ public class Level {
         
         for (int i = bx; i < ex; i++) {
             for (int j = by; j < ey; j++) {
-                g.drawImage(tiles[i][j].getTileType().getSprite().getImage(), i * 16, j * 16);
+                if(tiles[i][j]!= null){
+                    g.drawImage(tiles[i][j].getSprite().getImage(), i * 16, j * 16);
+                }
             }
         }
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 }

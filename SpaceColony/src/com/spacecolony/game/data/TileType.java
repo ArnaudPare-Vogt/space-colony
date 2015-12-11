@@ -24,6 +24,9 @@ import com.spacecolony.game.graphics.Sprite;
  */
 public class TileType {
     
+    public static final TileType DEFAULT_TYPE = new TileType(Sprite.DEFAULT_TEST);
+    
+    
     private Sprite sprite;
 
     public TileType(Sprite sprite) {
