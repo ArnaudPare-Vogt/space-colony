@@ -18,8 +18,11 @@ package com.spacecolony.game;
 
 import com.spacecolony.game.data.level.Level;
 import com.spacecolony.game.data.input.PlayerInput;
+import com.spacecolony.game.data.level.TileInfo;
 import com.spacecolony.game.gui.UIButton;
 import com.spacecolony.game.gui.UIElement;
+import com.spacecolony.game.gui.UIFixedSizeLabel;
+import com.spacecolony.game.gui.UILabel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -40,14 +43,17 @@ public class Game extends BasicGame {
     public static final int SCALE = 3;
     public static final int WIDTH = 200;
     public static final int HEIGHT = 150;
-    
+
     private Level lvl;
 
     private Vector2f pos = new Vector2f(0, 0);
     private Vector2f lastMousePos = new Vector2f(0, 0);
-    
+
+    private boolean isInBuildMode = false;
+    private UILabel buildButton;
+
     private PlayerInput plIn = new PlayerInput();
-    
+
     private List<UIElement> uiElements = new ArrayList<>();
 
     public Game(String title) {
@@ -57,10 +63,23 @@ public class Game extends BasicGame {
     @Override
     public void init(GameContainer container) throws SlickException {
         lvl = new Level(20, 15, new Random());
-        UIButton b = new UIButton("TEST");
-        b.setPos(new Vector2f(100, 100));
-        b.setOnClickAction(()->{System.out.println("HAHAHAHAHA");});
+        final UIButton b = new UIButton("BUILD MODE");
+        b.setPos(new Vector2f(0, 50));
         uiElements.add(b);
+        
+        buildButton = new UIFixedSizeLabel("X", new Vector2f(Level.TILE_RES*SCALE, Level.TILE_RES*SCALE));
+        buildButton.setVisible(isInBuildMode);
+        uiElements.add(buildButton);
+        
+        b.setOnClickAction(() -> {
+            isInBuildMode = !isInBuildMode;
+            if (isInBuildMode) {
+                b.setText("EXIT BUILD MODE");
+            } else {
+                b.setText("BUILD MODE");
+            }
+            buildButton.setVisible(isInBuildMode);
+        });
     }
 
     @Override
@@ -69,32 +88,32 @@ public class Game extends BasicGame {
 
         Input input = container.getInput();
         plIn.processInput(input);
-        
-        if(plIn.wasLeftMousePressed()){
+
+        if (plIn.wasLeftMousePressed()) {
             lastMousePos.x = input.getMouseX();
             lastMousePos.y = input.getMouseY();
         }
-        
-        if (input.isMouseButtonDown(Input.MOUSE_LEFT_BUTTON))  {
+
+        if (input.isMouseButtonDown(Input.MOUSE_LEFT_BUTTON)) {
             float dx = input.getMouseX() - lastMousePos.x;
             float dy = input.getMouseY() - lastMousePos.y;
-            
+
             lastMousePos.x = input.getMouseX();
             lastMousePos.y = input.getMouseY();
-            
-            pos.x -= dx/SCALE;
-            pos.y -= dy/SCALE;
-            
-            if(pos.x < 0){
+
+            pos.x -= dx / SCALE;
+            pos.y -= dy / SCALE;
+
+            if (pos.x < 0) {
                 pos.x = 0;
             }
-            if(pos.x > (lvl.getWidth()) * 16 - WIDTH){
+            if (pos.x > (lvl.getWidth()) * 16 - WIDTH) {
                 pos.x = (lvl.getWidth()) * 16 - WIDTH;
             }
-            if(pos.y < 0){
+            if (pos.y < 0) {
                 pos.y = 0;
             }
-            if(pos.y > lvl.getHeight() * 16 - HEIGHT){
+            if (pos.y > lvl.getHeight() * 16 - HEIGHT) {
                 pos.y = lvl.getHeight() * 16 - HEIGHT;
             }
         }
@@ -102,17 +121,32 @@ public class Game extends BasicGame {
         if (input.isKeyDown(Input.KEY_ESCAPE)) {
             container.exit();
         }
-        
+
         for (UIElement uiElement : uiElements) {
-            if(uiElement.getBoundingBox().contains(input.getMouseX(), input.getMouseY())){
+            if (uiElement.getBoundingBox().contains(input.getMouseX(), input.getMouseY())) {
                 uiElement.mouseIn();
-                if(plIn.wasLeftMousePressed()){
+                if (plIn.wasLeftMousePressed()) {
                     uiElement.clicked();
-                }else if(plIn.wasLeftMouseRelesed()){
+                } else if (plIn.wasLeftMouseRelesed()) {
                     uiElement.mouseReleased();
                 }
-            }else{
+            } else {
                 uiElement.mouseOut();
+            }
+        }
+        
+        lvl.update(dt);
+        
+        if(isInBuildMode){
+            float x = (plIn.getInput().getMouseX())/SCALE + pos.x;
+            float y = (plIn.getInput().getMouseY())/SCALE + pos.y;
+            
+            TileInfo tf = lvl.getNearestTile(new Vector2f(x, y));
+            if(tf != null){
+                Vector2f bbPos = tf.getFloatPos().sub(pos).scale(((float)SCALE));
+                System.out.println(bbPos);
+                buildButton.setPos(bbPos);
+                
             }
         }
     }
@@ -128,9 +162,9 @@ public class Game extends BasicGame {
         g.popTransform();
         
         for (UIElement uiElement : uiElements) {
-            uiElement.render(g);
+            uiElement.repaint(g);
         }
-        
+
     }
 
 }

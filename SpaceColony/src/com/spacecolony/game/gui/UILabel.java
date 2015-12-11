@@ -40,8 +40,7 @@ public class UILabel extends UIElement{
         this.text = text;
         this.padding = padding;
         
-        size.y = font.getHeight(text) + 2 * padding;
-        size.x = font.getWidth(text) + 2 * padding;
+        updateSize();
     }
     
     public UILabel(String text){
@@ -57,4 +56,13 @@ public class UILabel extends UIElement{
         g.drawString(text, pos.x + padding, pos.y + padding);
     }
 
+    public void setText(String text) {
+        this.text = text;
+        updateSize();
+    }
+
+    public void updateSize(){
+        size.y = font.getHeight(text) + 2 * padding;
+        size.x = font.getWidth(text) + 2 * padding;
+    }
 }

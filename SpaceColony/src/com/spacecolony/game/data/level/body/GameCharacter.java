@@ -66,4 +66,8 @@ public class GameCharacter extends Body {
         g.drawImage(spriteDirsMask[0].getImage(), pos.x, pos.y, color);
     }
 
+    @Override
+    public void update(float dt) {
+        pos.x += 1.f*dt;
+    }
 }

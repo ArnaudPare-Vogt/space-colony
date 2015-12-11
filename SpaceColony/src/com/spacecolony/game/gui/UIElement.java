@@ -31,6 +31,8 @@ public abstract class UIElement {
     protected Vector2f size = new Vector2f();
     
     private boolean mouseWasIn = false;
+    
+    protected boolean visible = true;
 
     public UIElement() {
     }
@@ -51,6 +53,12 @@ public abstract class UIElement {
     public void setPos(float x, float y) {
         pos.x = x;
         pos.y = y;
+    }
+    
+    public final void repaint(Graphics g){
+        if(isVisible()){
+            render(g);
+        }
     }
     
     public void render(Graphics g){
@@ -85,5 +93,12 @@ public abstract class UIElement {
 
     public void mouseReleased() {
     }
-    
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
 }
