@@ -20,19 +20,25 @@ import org.newdawn.slick.BasicGame;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
+import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Vector2f;
+import org.newdawn.slick.util.Log;
 
 /**
  *
  * @author 1448607
  */
-public class Game extends BasicGame{
+public class Game extends BasicGame {
 
-    public static final int SCALE = 0;
-    
+    public static final int SCALE = 3;
+
     private Image tm;
-    
+
+    private Vector2f pos = new Vector2f(0, 0);
+
+    private Vector2f lastMousePos = new Vector2f(0, 0);
+
     public Game(String title) {
         super(title);
     }
@@ -45,12 +51,36 @@ public class Game extends BasicGame{
 
     @Override
     public void update(GameContainer container, int delta) throws SlickException {
+        float dt = delta / 1000.f;
+
+        Input input = container.getInput();
+        
+        if(input.isMousePressed(Input.MOUSE_LEFT_BUTTON)){
+            lastMousePos.x = input.getMouseX();
+            lastMousePos.y = input.getMouseY();
+        }
+        
+        if (input.isMouseButtonDown(Input.MOUSE_LEFT_BUTTON))  {
+            float dx = input.getMouseX() - lastMousePos.x;
+            float dy = input.getMouseY() - lastMousePos.y;
+            
+            lastMousePos.x = input.getMouseX();
+            lastMousePos.y = input.getMouseY();
+            
+            pos.x += dx;
+            pos.y += dy;
+        }
+
+        if (input.isKeyDown(Input.KEY_ESCAPE)) {
+            container.exit();
+        }
     }
 
     @Override
     public void render(GameContainer container, Graphics g) throws SlickException {
-        g.scale(10, 10);
+        g.scale(SCALE, SCALE);
+        g.translate(pos.x, pos.y);
         g.drawImage(tm, 0, 0);
     }
-    
+
 }

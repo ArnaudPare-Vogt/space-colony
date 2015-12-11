@@ -29,8 +29,6 @@ public class Init {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        
-        
         try {
             AppGameContainer app = new AppGameContainer(new Game("test"));
             app.setDisplayMode(500, 400, false);
