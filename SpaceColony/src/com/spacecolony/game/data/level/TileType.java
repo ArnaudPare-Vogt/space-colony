@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.spacecolony.game.data;
+package com.spacecolony.game.data.level;
 
 import com.spacecolony.game.graphics.Sprite;
 

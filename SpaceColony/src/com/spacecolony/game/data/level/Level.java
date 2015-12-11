@@ -14,10 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.spacecolony.game.data;
+package com.spacecolony.game.data.level;
 
-import com.spacecolony.game.graphics.Sprite;
-import com.spacecolony.game.graphics.SpriteSheet;
+import com.spacecolony.game.data.level.body.Body;
+import com.spacecolony.game.data.level.body.GameCharacter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Vector2f;
@@ -28,33 +30,47 @@ import org.newdawn.slick.geom.Vector2f;
  */
 public class Level {
 
+    public static final int TILE_RES = 16;
+
     private int width, height;
 
     private Tile[][] tiles;
+
+    private List<Body> bodies = new ArrayList<>();
 
     public Level(int width, int height, Random rnd) {
         this.width = width;
         this.height = height;
 
         tiles = new Tile[width][height];
-        tiles[rnd.nextInt(width)][rnd.nextInt(height)] = new Tile(TileType.DEFAULT_TYPE);
+
+        int x = rnd.nextInt(width),
+                y = rnd.nextInt(height);
+
+        tiles[x][y] = new Tile(TileType.DEFAULT_TYPE);
+
+        bodies.add(new GameCharacter((x + .5f) * TILE_RES, (y + .5f) * TILE_RES, rnd));
     }
 
     public void render(Graphics g, Vector2f pos, Vector2f port) {
-        int bx = (int) pos.x / 16;
-        int by = (int) pos.y / 16;
-        int ex = bx + (int) port.x / 16 + 2;
-        int ey = by + (int) port.y / 16 + 2;
-        
-        ex = ex<width?ex:width;
-        ey = ey<height?ey:height;
-        
+        int bx = (int) pos.x / TILE_RES;
+        int by = (int) pos.y / TILE_RES;
+        int ex = bx + (int) port.x / TILE_RES + 2;
+        int ey = by + (int) port.y / TILE_RES + 2;
+
+        ex = ex < width ? ex : width;
+        ey = ey < height ? ey : height;
+
         for (int i = bx; i < ex; i++) {
             for (int j = by; j < ey; j++) {
-                if(tiles[i][j]!= null){
-                    g.drawImage(tiles[i][j].getSprite().getImage(), i * 16, j * 16);
+                if (tiles[i][j] != null) {
+                    g.drawImage(tiles[i][j].getSprite().getImage(), i * TILE_RES, j * TILE_RES);
                 }
             }
+        }
+
+        for (Body body : bodies) {
+            body.render(g);
         }
     }
 

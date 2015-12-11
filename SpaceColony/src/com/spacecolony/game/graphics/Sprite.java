@@ -23,9 +23,24 @@ import org.newdawn.slick.Image;
  * @author 1448607
  */
 public class Sprite {
-    
+
     public static final Sprite DEFAULT_TEST = new Sprite(SpriteSheet.TEST, 0, 0, 16, 16);
+
+    public static class Chars{
+        public static class Default{
+            public static final Sprite F = new Sprite(SpriteSheet.CHARACTERS, 0, 0, 8, 8);
+            public static final Sprite R = new Sprite(SpriteSheet.CHARACTERS, 8, 0, 8, 8);
+            public static final Sprite B = new Sprite(SpriteSheet.CHARACTERS, 0, 8, 8, 8);
+            public static final Sprite L = new Sprite(SpriteSheet.CHARACTERS, 8, 8, 8, 8);
+
+            public static final Sprite F_M = new Sprite(SpriteSheet.CHARACTERS, 16, 0, 8, 8);
+            public static final Sprite R_M = new Sprite(SpriteSheet.CHARACTERS, 16 + 8, 0, 8, 8);
+            public static final Sprite B_M = new Sprite(SpriteSheet.CHARACTERS, 16, 8, 8, 8);
+            public static final Sprite L_M = new Sprite(SpriteSheet.CHARACTERS, 16 + 8, 8, 8, 8);
+        }
+    }
     
+
     private Image image;
 
     public Sprite(SpriteSheet ss, int x, int y, int w, int h) {
@@ -35,5 +50,5 @@ public class Sprite {
     public Image getImage() {
         return image;
     }
-    
+
 }

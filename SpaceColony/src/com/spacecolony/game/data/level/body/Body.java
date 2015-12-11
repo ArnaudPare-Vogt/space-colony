@@ -14,28 +14,45 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.spacecolony.game.data;
+package com.spacecolony.game.data.level.body;
 
-import com.spacecolony.game.graphics.Sprite;
+import org.newdawn.slick.Graphics;
+import org.newdawn.slick.geom.Vector2f;
 
 /**
- *
+ * A simple in-game body. (an object that moves)
  * @author 1448607
  */
-public class Tile {
+public abstract class Body {
     
-    private TileType tileType;
+    protected Vector2f pos = new Vector2f();
+    protected Vector2f size = new Vector2f();
 
-    public Tile(TileType tileType) {
-        this.tileType = tileType;
-    }
-    
-    public Sprite getSprite(){
-        return tileType.getSprite();
+    public Body() {
     }
 
-    public TileType getTileType() {
-        return tileType;
+    public void setSize(Vector2f size) {
+        this.size = size;
+    }
+
+    public void setPos(Vector2f pos) {
+        this.pos = pos;
+    }
+
+    public void setSize(float x, float y) {
+        size.x = x;
+        size.y = y;
+    }
+
+    public void setPos(float x, float y) {
+        pos.x = x;
+        pos.y = y;
+    }
+    
+    public void render(Graphics g){
+    }
+    
+    public void update(float dt){
     }
     
 }

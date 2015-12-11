@@ -16,7 +16,7 @@
  */
 package com.spacecolony.game;
 
-import com.spacecolony.game.data.Level;
+import com.spacecolony.game.data.level.Level;
 import com.spacecolony.game.data.input.PlayerInput;
 import com.spacecolony.game.gui.UIButton;
 import com.spacecolony.game.gui.UIElement;
