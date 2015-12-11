@@ -14,28 +14,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.spacecolony.game;
-
-import org.newdawn.slick.AppGameContainer;
-import org.newdawn.slick.SlickException;
+package com.spacecolony.game.util;
 
 /**
  *
  * @author 1448607
  */
-public class Init {
+public class ExceptionEvent {
+    
+    private Exception exception;
+    private boolean consumed = false;
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        try {
-            AppGameContainer app = new AppGameContainer(new Game("test"));
-            app.setDisplayMode(Game.WIDTH * Game.SCALE, Game.HEIGHT * Game.SCALE, false);
-            app.start();
-        } catch (SlickException e) {
-            e.printStackTrace();
-        }
+    public ExceptionEvent(Exception exception) {
+        this.exception = exception;
     }
 
+    public Exception getException() {
+        return exception;
+    }
+
+    public void setConsumed(boolean consumed) {
+        this.consumed = consumed;
+    }
+
+    public boolean isConsumed() {
+        return consumed;
+    }
 }

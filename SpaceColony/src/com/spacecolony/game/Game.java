@@ -16,14 +16,15 @@
  */
 package com.spacecolony.game;
 
+import com.spacecolony.game.data.Level;
+import com.spacecolony.game.graphics.Sprite;
+import com.spacecolony.game.graphics.SpriteSheet;
 import org.newdawn.slick.BasicGame;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
-import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Vector2f;
-import org.newdawn.slick.util.Log;
 
 /**
  *
@@ -32,8 +33,12 @@ import org.newdawn.slick.util.Log;
 public class Game extends BasicGame {
 
     public static final int SCALE = 3;
+    public static final int WIDTH = 200;
+    public static final int HEIGHT = 150;
+    
 
-    private Image tm;
+    private SpriteSheet test;
+    private Level lvl;
 
     private Vector2f pos = new Vector2f(0, 0);
 
@@ -45,8 +50,8 @@ public class Game extends BasicGame {
 
     @Override
     public void init(GameContainer container) throws SlickException {
-        tm = new Image("Images/Test.png");
-        tm.setFilter(Image.FILTER_NEAREST);
+        test = new SpriteSheet("Images/Test.png");
+        lvl = new Level(15, 10, test);
     }
 
     @Override
@@ -67,8 +72,15 @@ public class Game extends BasicGame {
             lastMousePos.x = input.getMouseX();
             lastMousePos.y = input.getMouseY();
             
-            pos.x += dx;
-            pos.y += dy;
+            pos.x += dx/SCALE;
+            pos.y += dy/SCALE;
+            
+            if(pos.x > 0){
+                pos.x = 0;
+            }
+            if(pos.y > 0){
+                pos.y = 0;
+            }
         }
 
         if (input.isKeyDown(Input.KEY_ESCAPE)) {
@@ -80,7 +92,7 @@ public class Game extends BasicGame {
     public void render(GameContainer container, Graphics g) throws SlickException {
         g.scale(SCALE, SCALE);
         g.translate(pos.x, pos.y);
-        g.drawImage(tm, 0, 0);
+        lvl.render(g, pos, new Vector2f(WIDTH, HEIGHT));
     }
 
 }

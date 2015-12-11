@@ -14,28 +14,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.spacecolony.game;
+package com.spacecolony.game.data;
 
-import org.newdawn.slick.AppGameContainer;
-import org.newdawn.slick.SlickException;
+import com.spacecolony.game.graphics.Sprite;
 
 /**
  *
  * @author 1448607
  */
-public class Init {
+public class TileType {
+    
+    private Sprite sprite;
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        try {
-            AppGameContainer app = new AppGameContainer(new Game("test"));
-            app.setDisplayMode(Game.WIDTH * Game.SCALE, Game.HEIGHT * Game.SCALE, false);
-            app.start();
-        } catch (SlickException e) {
-            e.printStackTrace();
-        }
+    public TileType(Sprite sprite) {
+        this.sprite = sprite;
     }
-
+    
+    public Sprite getSprite() {
+        return sprite;
+    }
 }
