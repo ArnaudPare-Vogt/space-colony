@@ -16,175 +16,30 @@
  */
 package com.spacecolony.game;
 
-import com.spacecolony.game.data.level.Level;
-import com.spacecolony.game.data.input.PlayerInput;
-import com.spacecolony.game.data.level.TileInfo;
-import com.spacecolony.game.data.level.body.Body;
-import com.spacecolony.game.gui.UIButton;
-import com.spacecolony.game.gui.UIElement;
-import com.spacecolony.game.gui.UIFixedSizeLabel;
-import com.spacecolony.game.gui.UILabel;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import org.newdawn.slick.BasicGame;
-import org.newdawn.slick.Color;
+import com.spacecolony.game.state.PlayState;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
-import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
-import org.newdawn.slick.geom.Vector2f;
+import org.newdawn.slick.state.StateBasedGame;
 
 /**
  *
  * @author 1448607
  */
-public class Game extends BasicGame {
+public class Game extends StateBasedGame {
 
     public static final int SCALE = 3;
     public static final int WIDTH = 200;
     public static final int HEIGHT = 150;
 
-    private Level lvl;
-
-    private Vector2f pos = new Vector2f(0, 0);
-    private Vector2f lastMousePos = new Vector2f(0, 0);
-
-    private boolean isInBuildMode = false;
-
-    private boolean didAction = false;
-    private UILabel buildButton;
-
-    private PlayerInput plIn = new PlayerInput(pos);
-
-    private List<UIElement> uiElements = new ArrayList<>();
-
+    
     public Game(String title) {
         super(title);
     }
 
     @Override
-    public void init(GameContainer container) throws SlickException {
-        lvl = new Level(20, 15, new Random());
-        final UIButton b = new UIButton("BUILD MODE");
-        b.setPos(new Vector2f(0, 50));
-        uiElements.add(b);
-
-        buildButton = new UIFixedSizeLabel("X", new Vector2f(Level.TILE_RES * SCALE, Level.TILE_RES * SCALE));
-        buildButton.setVisible(isInBuildMode);
-        uiElements.add(buildButton);
-
-        b.setOnClickAction(() -> {
-            isInBuildMode = !isInBuildMode;
-            if (isInBuildMode) {
-                b.setText("EXIT BUILD MODE");
-            } else {
-                b.setText("BUILD MODE");
-            }
-            didAction = true;
-        });
-    }
-
-    @Override
-    public void update(GameContainer container, int delta) throws SlickException {
-        didAction = false;
-        float dt = delta / 1000.f;
-
-        Input input = container.getInput();
-        plIn.processInput(input);
-
-        if (plIn.wasMousePressed(Input.MOUSE_LEFT_BUTTON)) {
-            lastMousePos.x = input.getMouseX();
-            lastMousePos.y = input.getMouseY();
-        }
-
-        if (input.isMouseButtonDown(Input.MOUSE_LEFT_BUTTON)) {
-            float dx = input.getMouseX() - lastMousePos.x;
-            float dy = input.getMouseY() - lastMousePos.y;
-
-            lastMousePos.x = input.getMouseX();
-            lastMousePos.y = input.getMouseY();
-
-            pos.x -= dx / SCALE;
-            pos.y -= dy / SCALE;
-
-            if (pos.x < 0) {
-                pos.x = 0;
-            }
-            if (pos.x > (lvl.getWidth()) * 16 - WIDTH) {
-                pos.x = (lvl.getWidth()) * 16 - WIDTH;
-            }
-            if (pos.y < 0) {
-                pos.y = 0;
-            }
-            if (pos.y > lvl.getHeight() * 16 - HEIGHT) {
-                pos.y = lvl.getHeight() * 16 - HEIGHT;
-            }
-        }
-
-        if (input.isKeyDown(Input.KEY_ESCAPE)) {
-            container.exit();
-        }
-
-        for (UIElement uiElement : uiElements) {
-            if (uiElement.getBoundingBox().contains(input.getMouseX(), input.getMouseY())) {
-                uiElement.mouseIn();
-                if (plIn.clicked(Input.MOUSE_LEFT_BUTTON)) {
-                    uiElement.clicked();
-                } else if (plIn.wasMouseRelesed(Input.MOUSE_LEFT_BUTTON)) {
-                    uiElement.mouseReleased();
-                }
-            } else {
-                uiElement.mouseOut();
-            }
-        }
-
-        lvl.update(dt);
-
-        if (isInBuildMode) {
-            float x = (plIn.getInput().getMouseX()) / SCALE + pos.x;
-            float y = (plIn.getInput().getMouseY()) / SCALE + pos.y;
-
-            TileInfo tf = lvl.getNearestTile(new Vector2f(x, y));
-            if (tf != null && tf.getT() == null) {//its a spot and there is no tile yet
-                Vector2f bbPos = tf.getFloatPos().sub(pos).scale(((float) SCALE));
-                buildButton.setPos(bbPos);
-
-                if (lvl.isNextToTile(tf.getX(), tf.getY())) {
-                    buildButton.setVisible(true);
-                    if (plIn.clicked(Input.MOUSE_LEFT_BUTTON) && !didAction) {
-                        lvl.buildTile(tf.getX(), tf.getY());
-                    }
-                } else {
-                    buildButton.setVisible(false);
-                }
-            } else {
-                buildButton.setVisible(false);
-            }
-        } else {
-            if(plIn.clicked(Input.MOUSE_LEFT_BUTTON)){
-                lvl.selectBody(plIn.getMousePosInGameSpace());
-            }
-            if(plIn.clicked(Input.MOUSE_RIGHT_BUTTON)){
-            }
-            buildButton.setVisible(false);
-        }
-    }
-
-    @Override
-    public void render(GameContainer container, Graphics g) throws SlickException {
-        g.pushTransform();
-        g.scale(SCALE, SCALE);
-        g.setColor(Color.gray);
-        g.fillRect(0, 0, WIDTH, HEIGHT);
-        g.translate(-pos.x, -pos.y);
-        lvl.render(g, pos, new Vector2f(WIDTH, HEIGHT));
-        g.popTransform();
-
-        for (UIElement uiElement : uiElements) {
-            uiElement.repaint(g);
-        }
-
+    public void initStatesList(GameContainer container) throws SlickException {
+        addState(new PlayState(SCALE, WIDTH, HEIGHT));
     }
 
 }

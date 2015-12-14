@@ -34,6 +34,10 @@ public class PlayerInput {
         Input.MOUSE_RIGHT_BUTTON
     };
 
+    public static final int MOUSE_LEFT_BUTTON = 0;
+    public static final int MOUSE_MIDDLE_BUTTON = 1;
+    public static final int MOUSE_RIGHT_BUTTON = 2;
+
     private Input input;
 
     private boolean[] mousePressed = new boolean[MOUSE_BUTTON_NUM];
@@ -42,7 +46,9 @@ public class PlayerInput {
     private boolean[] clicked = new boolean[MOUSE_BUTTON_NUM];
 
     private Vector2f[] mouseDownPosition = new Vector2f[MOUSE_BUTTON_NUM];
-    
+    private Vector2f[] mouseLastDownPosition = new Vector2f[MOUSE_BUTTON_NUM];
+    private Vector2f[] mouseDelta = new Vector2f[MOUSE_BUTTON_NUM];
+
     private Vector2f mousePosInGameSpace = new Vector2f();
     private Vector2f gameSpaceDecal;
 
@@ -50,6 +56,8 @@ public class PlayerInput {
         this.gameSpaceDecal = gameSpaceDecal;
         for (int i = 0; i < MOUSE_BUTTON_NUM; i++) {
             mouseDownPosition[i] = new Vector2f();
+            mouseLastDownPosition[i] = new Vector2f();
+            mouseDelta[i] = new Vector2f();
         }
     }
 
@@ -64,6 +72,20 @@ public class PlayerInput {
             if (mouseWasPressed[i]) {
                 mouseDownPosition[i].x = input.getMouseX();
                 mouseDownPosition[i].y = input.getMouseY();
+                
+                mouseLastDownPosition[i].x = input.getMouseX();
+                mouseLastDownPosition[i].y = input.getMouseY();
+            }
+
+            if (mousePressed[i]) {
+                mouseDelta[i].x = input.getMouseX() - mouseLastDownPosition[i].x;
+                mouseDelta[i].y = input.getMouseY() - mouseLastDownPosition[i].y;
+                
+                mouseLastDownPosition[i].x = input.getMouseX();
+                mouseLastDownPosition[i].y = input.getMouseY();
+            }else{
+                mouseDelta[i].x = 0;
+                mouseDelta[i].y = 0;
             }
 
             clicked[i] = false;
@@ -73,11 +95,11 @@ public class PlayerInput {
                         && Math.abs(input.getMouseY() - mouseDownPosition[i].y) <= MOUSE_CLICK_LIMIT_DISPLACEMENT;
             }
         }
-        
+
         mousePosInGameSpace.x = input.getMouseX();
         mousePosInGameSpace.y = input.getMouseY();
-        
-        mousePosInGameSpace.scale(1.f/Game.SCALE).add(gameSpaceDecal);
+
+        mousePosInGameSpace.scale(1.f / Game.SCALE).add(gameSpaceDecal);
     }
 
     public Input getInput() {
@@ -85,23 +107,27 @@ public class PlayerInput {
     }
 
     public boolean isMousePressed(int mouseButton) {
-        return mousePressed[MOUSE_BUTTON_MAP[mouseButton]];
+        return mousePressed[mouseButton];
     }
 
     public boolean wasMousePressed(int mouseButton) {
-        return mouseWasPressed[MOUSE_BUTTON_MAP[mouseButton]];
+        return mouseWasPressed[mouseButton];
     }
 
     public boolean wasMouseRelesed(int mouseButton) {
-        return mouseWasRelesed[MOUSE_BUTTON_MAP[mouseButton]];
+        return mouseWasRelesed[mouseButton];
     }
 
     public boolean clicked(int mouseButton) {
-        return clicked[MOUSE_BUTTON_MAP[mouseButton]];
+        return clicked[mouseButton];
     }
 
     public Vector2f getMousePosInGameSpace() {
         return mousePosInGameSpace;
+    }
+
+    public Vector2f getMouseDelta(int mouseButtonBtn) {
+        return mouseDelta[mouseButtonBtn];
     }
 
 }
