@@ -16,6 +16,7 @@
  */
 package com.spacecolony.game.data.input;
 
+import com.spacecolony.game.Game;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.geom.Vector2f;
 
@@ -26,54 +27,81 @@ import org.newdawn.slick.geom.Vector2f;
 public class PlayerInput {
 
     public static final int MOUSE_CLICK_LIMIT_DISPLACEMENT = 5;
+    public static final int MOUSE_BUTTON_NUM = 3;
+    public static final int[] MOUSE_BUTTON_MAP = {
+        Input.MOUSE_LEFT_BUTTON,
+        Input.MOUSE_MIDDLE_BUTTON,
+        Input.MOUSE_RIGHT_BUTTON
+    };
 
     private Input input;
 
-    private boolean leftMousePressed = false;
-    private boolean leftMouseWasRelesed = false;
-    private boolean leftMouseWasPressed = false;
-    private boolean leftClicked = false;
+    private boolean[] mousePressed = new boolean[MOUSE_BUTTON_NUM];
+    private boolean[] mouseWasRelesed = new boolean[MOUSE_BUTTON_NUM];
+    private boolean[] mouseWasPressed = new boolean[MOUSE_BUTTON_NUM];
+    private boolean[] clicked = new boolean[MOUSE_BUTTON_NUM];
 
-    private Vector2f mouseDownPosition = new Vector2f();
+    private Vector2f[] mouseDownPosition = new Vector2f[MOUSE_BUTTON_NUM];
+    
+    private Vector2f mousePosInGameSpace = new Vector2f();
+    private Vector2f gameSpaceDecal;
+
+    public PlayerInput(Vector2f gameSpaceDecal) {
+        this.gameSpaceDecal = gameSpaceDecal;
+        for (int i = 0; i < MOUSE_BUTTON_NUM; i++) {
+            mouseDownPosition[i] = new Vector2f();
+        }
+    }
 
     public void processInput(Input input) {
         this.input = input;
-        leftMouseWasPressed = input.isMousePressed(Input.MOUSE_LEFT_BUTTON);
-        leftMouseWasRelesed = leftMousePressed && !input.isMouseButtonDown(Input.MOUSE_LEFT_BUTTON);
-        leftMousePressed = input.isMouseButtonDown(Input.MOUSE_LEFT_BUTTON);
 
-        if (leftMouseWasPressed) {
-            mouseDownPosition.x = input.getMouseX();
-            mouseDownPosition.y = input.getMouseY();
+        for (int i = 0; i < MOUSE_BUTTON_NUM; i++) {
+            mouseWasPressed[i] = input.isMousePressed(MOUSE_BUTTON_MAP[i]);
+            mouseWasRelesed[i] = mousePressed[i] && !input.isMouseButtonDown(MOUSE_BUTTON_MAP[i]);
+            mousePressed[i] = input.isMouseButtonDown(MOUSE_BUTTON_MAP[i]);
+
+            if (mouseWasPressed[i]) {
+                mouseDownPosition[i].x = input.getMouseX();
+                mouseDownPosition[i].y = input.getMouseY();
+            }
+
+            clicked[i] = false;
+            if (mouseWasRelesed[i]) {
+                clicked[i]
+                        = Math.abs(input.getMouseX() - mouseDownPosition[i].x) <= MOUSE_CLICK_LIMIT_DISPLACEMENT
+                        && Math.abs(input.getMouseY() - mouseDownPosition[i].y) <= MOUSE_CLICK_LIMIT_DISPLACEMENT;
+            }
         }
-
-        leftClicked = false;
-        if (leftMouseWasRelesed) {
-            leftClicked
-                    = Math.abs(input.getMouseX() - mouseDownPosition.x) <= MOUSE_CLICK_LIMIT_DISPLACEMENT
-                    && Math.abs(input.getMouseY() - mouseDownPosition.y) <= MOUSE_CLICK_LIMIT_DISPLACEMENT;
-        }
-
+        
+        mousePosInGameSpace.x = input.getMouseX();
+        mousePosInGameSpace.y = input.getMouseY();
+        
+        mousePosInGameSpace.scale(1.f/Game.SCALE).add(gameSpaceDecal);
     }
 
     public Input getInput() {
         return input;
     }
 
-    public boolean isLeftMousePressed() {
-        return leftMousePressed;
+    public boolean isMousePressed(int mouseButton) {
+        return mousePressed[MOUSE_BUTTON_MAP[mouseButton]];
     }
 
-    public boolean wasLeftMousePressed() {
-        return leftMouseWasPressed;
+    public boolean wasMousePressed(int mouseButton) {
+        return mouseWasPressed[MOUSE_BUTTON_MAP[mouseButton]];
     }
 
-    public boolean wasLeftMouseRelesed() {
-        return leftMouseWasRelesed;
+    public boolean wasMouseRelesed(int mouseButton) {
+        return mouseWasRelesed[MOUSE_BUTTON_MAP[mouseButton]];
     }
 
-    public boolean leftClicked() {
-        return leftClicked;
+    public boolean clicked(int mouseButton) {
+        return clicked[MOUSE_BUTTON_MAP[mouseButton]];
+    }
+
+    public Vector2f getMousePosInGameSpace() {
+        return mousePosInGameSpace;
     }
 
 }

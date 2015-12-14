@@ -25,6 +25,9 @@ import org.newdawn.slick.SlickException;
  */
 public class Init {
     
+    public static final int PLAY_STATE_ID = 1;
+    
+    
     /**
      * Main.
      * @param args the command line arguments

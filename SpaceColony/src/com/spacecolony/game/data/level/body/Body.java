@@ -17,6 +17,8 @@
 package com.spacecolony.game.data.level.body;
 
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.geom.Rectangle;
+import org.newdawn.slick.geom.Shape;
 import org.newdawn.slick.geom.Vector2f;
 
 /**
@@ -55,4 +57,15 @@ public abstract class Body {
     public void update(float dt){
     }
     
+    public boolean isSelectable(){
+        return true;
+    }
+    
+    public Shape getBoundingBox(){
+        return new Rectangle(pos.x, pos.y, size.x, size.y);
+    }
+    
+    public Vector2f getCenter(){
+        return new Vector2f(pos.x + size.x/2, pos.y + size.y/2);
+    }
 }

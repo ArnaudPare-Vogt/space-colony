@@ -19,12 +19,12 @@ package com.spacecolony.game;
 import com.spacecolony.game.data.level.Level;
 import com.spacecolony.game.data.input.PlayerInput;
 import com.spacecolony.game.data.level.TileInfo;
+import com.spacecolony.game.data.level.body.Body;
 import com.spacecolony.game.gui.UIButton;
 import com.spacecolony.game.gui.UIElement;
 import com.spacecolony.game.gui.UIFixedSizeLabel;
 import com.spacecolony.game.gui.UILabel;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import org.newdawn.slick.BasicGame;
@@ -55,7 +55,7 @@ public class Game extends BasicGame {
     private boolean didAction = false;
     private UILabel buildButton;
 
-    private PlayerInput plIn = new PlayerInput();
+    private PlayerInput plIn = new PlayerInput(pos);
 
     private List<UIElement> uiElements = new ArrayList<>();
 
@@ -93,7 +93,7 @@ public class Game extends BasicGame {
         Input input = container.getInput();
         plIn.processInput(input);
 
-        if (plIn.wasLeftMousePressed()) {
+        if (plIn.wasMousePressed(Input.MOUSE_LEFT_BUTTON)) {
             lastMousePos.x = input.getMouseX();
             lastMousePos.y = input.getMouseY();
         }
@@ -129,9 +129,9 @@ public class Game extends BasicGame {
         for (UIElement uiElement : uiElements) {
             if (uiElement.getBoundingBox().contains(input.getMouseX(), input.getMouseY())) {
                 uiElement.mouseIn();
-                if (plIn.leftClicked()) {
+                if (plIn.clicked(Input.MOUSE_LEFT_BUTTON)) {
                     uiElement.clicked();
-                } else if (plIn.wasLeftMouseRelesed()) {
+                } else if (plIn.wasMouseRelesed(Input.MOUSE_LEFT_BUTTON)) {
                     uiElement.mouseReleased();
                 }
             } else {
@@ -152,7 +152,7 @@ public class Game extends BasicGame {
 
                 if (lvl.isNextToTile(tf.getX(), tf.getY())) {
                     buildButton.setVisible(true);
-                    if (plIn.leftClicked() && !didAction) {
+                    if (plIn.clicked(Input.MOUSE_LEFT_BUTTON) && !didAction) {
                         lvl.buildTile(tf.getX(), tf.getY());
                     }
                 } else {
@@ -162,6 +162,11 @@ public class Game extends BasicGame {
                 buildButton.setVisible(false);
             }
         } else {
+            if(plIn.clicked(Input.MOUSE_LEFT_BUTTON)){
+                lvl.selectBody(plIn.getMousePosInGameSpace());
+            }
+            if(plIn.clicked(Input.MOUSE_RIGHT_BUTTON)){
+            }
             buildButton.setVisible(false);
         }
     }

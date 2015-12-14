@@ -21,7 +21,9 @@ import com.spacecolony.game.data.level.body.GameCharacter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.geom.Shape;
 import org.newdawn.slick.geom.Vector2f;
 
 /**
@@ -31,12 +33,14 @@ import org.newdawn.slick.geom.Vector2f;
 public class Level {
 
     public static final int TILE_RES = 16;
+    public static final float SELECTED_CHARACTER_CIRCLE_RADIUS = 8;
 
     private int width, height;
 
     private Tile[][] tiles;
 
     private List<Body> bodies = new ArrayList<>();
+    private GameCharacter selectedCharacter;
 
     public Level(int width, int height, Random rnd) {
         this.width = width;
@@ -44,8 +48,6 @@ public class Level {
 
         tiles = new Tile[width][height];
 
-//        int x = rnd.nextInt(width),
-//                y = rnd.nextInt(height);
         int x = 10,y=10;
 
         tiles[x][y] = new ConnectedTile(TileType.DEFAULT_TYPE_CONNECTED);
@@ -72,6 +74,12 @@ public class Level {
 
         for (Body body : bodies) {
             body.render(g);
+        }
+        
+        if(selectedCharacter != null){
+            g.setColor(Color.red);
+            Vector2f cent = selectedCharacter.getCenter();
+            g.drawOval(cent.x - SELECTED_CHARACTER_CIRCLE_RADIUS/2, cent.y - SELECTED_CHARACTER_CIRCLE_RADIUS/2, SELECTED_CHARACTER_CIRCLE_RADIUS, SELECTED_CHARACTER_CIRCLE_RADIUS);
         }
     }
 
@@ -162,5 +170,22 @@ public class Level {
     
     private boolean isInBounds(int x, int y){
         return (x >= 0 && y >= 0 && x < width && y < height);
+    }
+    
+    public void selectBody(Vector2f position){
+        selectedCharacter = null;
+        for (Body body : bodies) {
+            if(body.isSelectable()){
+                Shape s = body.getBoundingBox();
+                if(s.contains(position.x, position.y)){
+                    if(body instanceof GameCharacter){
+                        selectedCharacter = ((GameCharacter)body);
+                    }
+                }
+            }
+        }
+    }
+    
+    public void goToTile(int tileX, int tileY){
     }
 }

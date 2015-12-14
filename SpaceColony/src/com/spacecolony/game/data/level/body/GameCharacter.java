@@ -68,6 +68,6 @@ public class GameCharacter extends Body {
 
     @Override
     public void update(float dt) {
-        pos.x += 1.f*dt;
+        
     }
 }
