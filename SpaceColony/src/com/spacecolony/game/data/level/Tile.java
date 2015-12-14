@@ -24,18 +24,22 @@ import com.spacecolony.game.graphics.Sprite;
  */
 public class Tile {
     
-    private TileType tileType;
+    protected final TileType tileType;
+    private int tileIndex = 0;
 
     public Tile(TileType tileType) {
         this.tileType = tileType;
     }
     
     public Sprite getSprite(){
-        return tileType.getSprite();
+        return tileType.getSprite(0);
     }
 
     public TileType getTileType() {
         return tileType;
+    }
+    
+    public void refresh(Tile[] adjTiles){
     }
     
 }

@@ -56,4 +56,12 @@ public class SpriteSheet{
     public static void addExceptionCallback(ExceptionCallback e){
         THROWER.addCallback(e);
     }
+    
+    public int getHeight(){
+        return image.getHeight();
+    }
+    
+    public int getWidth(){
+        return image.getWidth();
+    }
 }

@@ -46,8 +46,10 @@ public class UIFixedSizeLabel extends UILabel {
         int h = font.getHeight(text);
         int w = font.getWidth(text);
 
+        g.setColor(background);
         g.fillRect(pos.x, pos.y, size.x, size.y);
-        g.drawString(text, pos.x - w / 2, pos.y - h / 2);
+        g.setColor(fontColor);
+        g.drawString(text, pos.x + (size.x - w) / 2, pos.y + (size.y - h) / 2);
     }
 
 }

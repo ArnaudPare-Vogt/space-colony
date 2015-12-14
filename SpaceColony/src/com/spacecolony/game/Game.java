@@ -24,6 +24,7 @@ import com.spacecolony.game.gui.UIElement;
 import com.spacecolony.game.gui.UIFixedSizeLabel;
 import com.spacecolony.game.gui.UILabel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import org.newdawn.slick.BasicGame;
@@ -50,6 +51,8 @@ public class Game extends BasicGame {
     private Vector2f lastMousePos = new Vector2f(0, 0);
 
     private boolean isInBuildMode = false;
+
+    private boolean didAction = false;
     private UILabel buildButton;
 
     private PlayerInput plIn = new PlayerInput();
@@ -66,11 +69,11 @@ public class Game extends BasicGame {
         final UIButton b = new UIButton("BUILD MODE");
         b.setPos(new Vector2f(0, 50));
         uiElements.add(b);
-        
-        buildButton = new UIFixedSizeLabel("X", new Vector2f(Level.TILE_RES*SCALE, Level.TILE_RES*SCALE));
+
+        buildButton = new UIFixedSizeLabel("X", new Vector2f(Level.TILE_RES * SCALE, Level.TILE_RES * SCALE));
         buildButton.setVisible(isInBuildMode);
         uiElements.add(buildButton);
-        
+
         b.setOnClickAction(() -> {
             isInBuildMode = !isInBuildMode;
             if (isInBuildMode) {
@@ -78,12 +81,13 @@ public class Game extends BasicGame {
             } else {
                 b.setText("BUILD MODE");
             }
-            buildButton.setVisible(isInBuildMode);
+            didAction = true;
         });
     }
 
     @Override
     public void update(GameContainer container, int delta) throws SlickException {
+        didAction = false;
         float dt = delta / 1000.f;
 
         Input input = container.getInput();
@@ -125,7 +129,7 @@ public class Game extends BasicGame {
         for (UIElement uiElement : uiElements) {
             if (uiElement.getBoundingBox().contains(input.getMouseX(), input.getMouseY())) {
                 uiElement.mouseIn();
-                if (plIn.wasLeftMousePressed()) {
+                if (plIn.leftClicked()) {
                     uiElement.clicked();
                 } else if (plIn.wasLeftMouseRelesed()) {
                     uiElement.mouseReleased();
@@ -134,20 +138,31 @@ public class Game extends BasicGame {
                 uiElement.mouseOut();
             }
         }
-        
+
         lvl.update(dt);
-        
-        if(isInBuildMode){
-            float x = (plIn.getInput().getMouseX())/SCALE + pos.x;
-            float y = (plIn.getInput().getMouseY())/SCALE + pos.y;
-            
+
+        if (isInBuildMode) {
+            float x = (plIn.getInput().getMouseX()) / SCALE + pos.x;
+            float y = (plIn.getInput().getMouseY()) / SCALE + pos.y;
+
             TileInfo tf = lvl.getNearestTile(new Vector2f(x, y));
-            if(tf != null){
-                Vector2f bbPos = tf.getFloatPos().sub(pos).scale(((float)SCALE));
-                System.out.println(bbPos);
+            if (tf != null && tf.getT() == null) {//its a spot and there is no tile yet
+                Vector2f bbPos = tf.getFloatPos().sub(pos).scale(((float) SCALE));
                 buildButton.setPos(bbPos);
-                
+
+                if (lvl.isNextToTile(tf.getX(), tf.getY())) {
+                    buildButton.setVisible(true);
+                    if (plIn.leftClicked() && !didAction) {
+                        lvl.buildTile(tf.getX(), tf.getY());
+                    }
+                } else {
+                    buildButton.setVisible(false);
+                }
+            } else {
+                buildButton.setVisible(false);
             }
+        } else {
+            buildButton.setVisible(false);
         }
     }
 
@@ -160,7 +175,7 @@ public class Game extends BasicGame {
         g.translate(-pos.x, -pos.y);
         lvl.render(g, pos, new Vector2f(WIDTH, HEIGHT));
         g.popTransform();
-        
+
         for (UIElement uiElement : uiElements) {
             uiElement.repaint(g);
         }

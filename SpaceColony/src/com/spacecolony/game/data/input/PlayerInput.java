@@ -17,26 +17,43 @@
 package com.spacecolony.game.data.input;
 
 import org.newdawn.slick.Input;
+import org.newdawn.slick.geom.Vector2f;
 
 /**
  *
  * @author 1448607
  */
 public class PlayerInput {
-    
-    
+
+    public static final int MOUSE_CLICK_LIMIT_DISPLACEMENT = 5;
+
     private Input input;
-    
-    private boolean lefttMousePressed = false;
+
+    private boolean leftMousePressed = false;
     private boolean leftMouseWasRelesed = false;
     private boolean leftMouseWasPressed = false;
-    
-    
-    public void processInput(Input input){
+    private boolean leftClicked = false;
+
+    private Vector2f mouseDownPosition = new Vector2f();
+
+    public void processInput(Input input) {
         this.input = input;
         leftMouseWasPressed = input.isMousePressed(Input.MOUSE_LEFT_BUTTON);
-        leftMouseWasRelesed = lefttMousePressed && !input.isMouseButtonDown(Input.MOUSE_LEFT_BUTTON);
-        lefttMousePressed = input.isMouseButtonDown(Input.MOUSE_LEFT_BUTTON);
+        leftMouseWasRelesed = leftMousePressed && !input.isMouseButtonDown(Input.MOUSE_LEFT_BUTTON);
+        leftMousePressed = input.isMouseButtonDown(Input.MOUSE_LEFT_BUTTON);
+
+        if (leftMouseWasPressed) {
+            mouseDownPosition.x = input.getMouseX();
+            mouseDownPosition.y = input.getMouseY();
+        }
+
+        leftClicked = false;
+        if (leftMouseWasRelesed) {
+            leftClicked
+                    = Math.abs(input.getMouseX() - mouseDownPosition.x) <= MOUSE_CLICK_LIMIT_DISPLACEMENT
+                    && Math.abs(input.getMouseY() - mouseDownPosition.y) <= MOUSE_CLICK_LIMIT_DISPLACEMENT;
+        }
+
     }
 
     public Input getInput() {
@@ -44,7 +61,7 @@ public class PlayerInput {
     }
 
     public boolean isLeftMousePressed() {
-        return lefttMousePressed;
+        return leftMousePressed;
     }
 
     public boolean wasLeftMousePressed() {
@@ -54,7 +71,9 @@ public class PlayerInput {
     public boolean wasLeftMouseRelesed() {
         return leftMouseWasRelesed;
     }
-    
-    
-    
+
+    public boolean leftClicked() {
+        return leftClicked;
+    }
+
 }

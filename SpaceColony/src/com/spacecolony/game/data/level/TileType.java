@@ -16,7 +16,9 @@
  */
 package com.spacecolony.game.data.level;
 
+import com.spacecolony.game.graphics.ConnectedSprite;
 import com.spacecolony.game.graphics.Sprite;
+import com.spacecolony.game.graphics.SpriteSheet;
 
 /**
  *
@@ -25,6 +27,7 @@ import com.spacecolony.game.graphics.Sprite;
 public class TileType {
     
     public static final TileType DEFAULT_TYPE = new TileType(Sprite.DEFAULT_TEST);
+    public static final TileType DEFAULT_TYPE_CONNECTED = new ConnectedTileType(ConnectedSprite.DEFAULT_TEST);
     
     
     private Sprite sprite;
@@ -33,7 +36,7 @@ public class TileType {
         this.sprite = sprite;
     }
     
-    public Sprite getSprite() {
+    public Sprite getSprite(int meta) {
         return sprite;
     }
 }

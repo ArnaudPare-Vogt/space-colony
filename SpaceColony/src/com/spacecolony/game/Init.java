@@ -24,7 +24,7 @@ import org.newdawn.slick.SlickException;
  * @author 1448607
  */
 public class Init {
-
+    
     /**
      * Main.
      * @param args the command line arguments
