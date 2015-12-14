@@ -16,21 +16,20 @@
  */
 package com.spacecolony.game.data.level;
 
-import com.spacecolony.game.data.level.body.Body;
-import com.spacecolony.game.data.level.body.GameCharacter;
+import com.spacecolony.game.util.Coordinate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
-import org.newdawn.slick.geom.Shape;
 import org.newdawn.slick.geom.Vector2f;
+import org.newdawn.slick.util.pathfinding.PathFindingContext;
+import org.newdawn.slick.util.pathfinding.TileBasedMap;
 
 /**
  *
  * @author 1448607
  */
-public class Level {
+public class Level implements TileBasedMap{
 
     public static final int TILE_RES = 16;
 
@@ -115,6 +114,27 @@ public class Level {
         nearTiles[4] = null;//no center tile
         return nearTiles;
     }
+    
+    public List<Coordinate> getNearbyCoords(Coordinate target){
+        List<Coordinate> coords = new ArrayList<>();
+        if(getTile(target.x + 1, target.y) != null){
+            coords.add(new Coordinate(target.x + 1, target.y));
+        }
+        if(getTile(target.x, target.y + 1) != null){
+            coords.add(new Coordinate(target.x, target.y + 1));
+        }
+        if(getTile(target.x - 1, target.y) != null){
+            coords.add(new Coordinate(target.x - 1, target.y));
+        }
+        if(getTile(target.x, target.y - 1) != null){
+            coords.add(new Coordinate(target.x, target.y - 1));
+        }
+        return coords;
+    }
+    
+    public float getMovCost(Coordinate t1, Coordinate t2){
+        return 1;
+    }
 
     /**
      * Returns a tile at the given position, or null if there is none or if the position is out of bounds
@@ -155,5 +175,29 @@ public class Level {
     
     public Vector2f centerOnCell(int x, int y){
         return new Vector2f(x + .5f, y + .5f).scale(TILE_RES);
+    }
+
+    @Override
+    public int getWidthInTiles() {
+        return width;
+    }
+
+    @Override
+    public int getHeightInTiles() {
+        return height;
+    }
+
+    @Override
+    public void pathFinderVisited(int x, int y) {
+    }
+
+    @Override
+    public boolean blocked(PathFindingContext context, int tx, int ty) {
+        return getTile(tx, ty)==null;
+    }
+
+    @Override
+    public float getCost(PathFindingContext context, int tx, int ty) {
+        return 1;
     }
 }

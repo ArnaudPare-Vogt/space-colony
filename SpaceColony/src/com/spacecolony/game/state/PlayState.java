@@ -45,8 +45,6 @@ import org.newdawn.slick.state.StateBasedGame;
  */
 public class PlayState extends BasicGameState {
 
-    public static final float SELECTED_CHARACTER_CIRCLE_RADIUS = 8;
-
     private final int scale, width, height;
 
     private Level lvl;
@@ -80,7 +78,7 @@ public class PlayState extends BasicGameState {
     @Override
     public void init(GameContainer container, StateBasedGame game) throws SlickException {
         lvl = new Level(20, 15, rnd);
-        bodies.add(new GameCharacter(10 * Level.TILE_RES, 10 * Level.TILE_RES, rnd, lvl));
+        bodies.add(new GameCharacter((int)(10.5 * Level.TILE_RES), (int)(10.5 * Level.TILE_RES), rnd, lvl));
 
         final UIButton b = new UIButton("BUILD MODE");
         b.setPos(new Vector2f(0, 50));
@@ -120,12 +118,6 @@ public class PlayState extends BasicGameState {
     private void renderBodies(Graphics g) {
         for (Body body : bodies) {
             body.render(g);
-        }
-
-        if (selectedCharacter != null) {
-            g.setColor(Color.red);
-            Vector2f cent = selectedCharacter.getCenter();
-            g.drawOval(cent.x - SELECTED_CHARACTER_CIRCLE_RADIUS / 2, cent.y - SELECTED_CHARACTER_CIRCLE_RADIUS / 2, SELECTED_CHARACTER_CIRCLE_RADIUS, SELECTED_CHARACTER_CIRCLE_RADIUS);
         }
     }
 
@@ -214,6 +206,9 @@ public class PlayState extends BasicGameState {
     }
 
     public void selectBody(Vector2f position) {
+        if(selectedCharacter != null){
+            selectedCharacter.setSelected(false);
+        }
         selectedCharacter = null;
         for (Body body : bodies) {
             if (body.isSelectable()) {
@@ -221,6 +216,7 @@ public class PlayState extends BasicGameState {
                 if (s.contains(position.x, position.y)) {
                     if (body instanceof GameCharacter) {
                         selectedCharacter = ((GameCharacter) body);
+                        selectedCharacter.setSelected(true);
                     }
                 }
             }

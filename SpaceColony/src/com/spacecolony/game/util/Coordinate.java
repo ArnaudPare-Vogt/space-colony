@@ -40,5 +40,22 @@ public class Coordinate {
     public int getY() {
         return y;
     }
-    
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof Coordinate){
+            Coordinate c = ((Coordinate)obj);
+            return (c.x==x)&&(c.y==y);
+        }else{
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 29 * hash + this.x;
+        hash = 29 * hash + this.y;
+        return hash;
+    }
 }

@@ -17,6 +17,7 @@
 package com.spacecolony.game.data.level.body;
 
 import com.spacecolony.game.data.level.Level;
+import com.spacecolony.game.data.level.TileInfo;
 import com.spacecolony.game.graphics.Sprite;
 import com.spacecolony.game.util.Coordinate;
 import java.util.ArrayList;
@@ -24,6 +25,8 @@ import java.util.Random;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Vector2f;
+import org.newdawn.slick.util.pathfinding.AStarPathFinder;
+import org.newdawn.slick.util.pathfinding.Path;
 
 /**
  *
@@ -32,6 +35,7 @@ import org.newdawn.slick.geom.Vector2f;
 public class GameCharacter extends Body {
 
     public static final int CHAR_DEFAULT_SIZE = 8;
+    public static final float SELECTED_CHARACTER_CIRCLE_RADIUS = 8;
 
     private static final float SPEED = 32;//in pixels/second
 
@@ -63,6 +67,10 @@ public class GameCharacter extends Body {
     private ArrayList<Coordinate> goals = new ArrayList<>();
     private Vector2f goalPos;
     private boolean walkingSomewhere = false;
+    
+    private int dir = 0;
+    
+    private boolean selected;
 
     public GameCharacter(float x, float y, Random characterGenerator, Level station) {
         this.station = station;
@@ -74,8 +82,23 @@ public class GameCharacter extends Body {
 
     @Override
     public void render(Graphics g) {
-        g.drawImage(spriteDirs[0].getImage(), pos.x, pos.y);
-        g.drawImage(spriteDirsMask[0].getImage(), pos.x, pos.y, color);
+        g.drawImage(spriteDirs[dir].getImage(), pos.x, pos.y);
+        g.drawImage(spriteDirsMask[dir].getImage(), pos.x, pos.y, color);
+        
+        if(selected){
+            g.setColor(Color.red);
+            Vector2f cent = getCenter();
+            g.drawOval(cent.x - SELECTED_CHARACTER_CIRCLE_RADIUS / 2, cent.y - SELECTED_CHARACTER_CIRCLE_RADIUS / 2, SELECTED_CHARACTER_CIRCLE_RADIUS, SELECTED_CHARACTER_CIRCLE_RADIUS);
+            
+            if(!goals.isEmpty()){
+                Vector2f lastPos = size.copy().scale(1/2.f).add(pos);
+                for (int i = 0; i < goals.size(); i++) {
+                    Vector2f newPos = station.centerOnCell(goals.get(i).x, goals.get(i).y);
+                    g.drawLine(lastPos.x, lastPos.y, newPos.x, newPos.y);
+                    lastPos = newPos;
+                }
+            }
+        }
     }
 
     @Override
@@ -84,6 +107,21 @@ public class GameCharacter extends Body {
             goalPos = station.centerOnCell(goals.get(0).x, goals.get(0).y).sub(size.copy().scale(.5f));
 
             Vector2f dp = goalPos.copy().sub(pos);
+            
+            if(Math.abs(dp.getX()) < Math.abs(dp.getY())){
+                if(dp.getY() > 0){
+                    dir = 0;
+                }else{
+                    dir = 3;
+                }
+            }else{
+                if(dp.getX() > 0){
+                    dir = 2;
+                }else{
+                    dir = 1;
+                }
+            }
+            
             if (dp.lengthSquared() < SPEED * dt) {
                 setPos(station.centerOnCell(goals.get(0).x, goals.get(0).y).sub(size.copy().scale(.5f)));
                 nextGoal();
@@ -95,7 +133,14 @@ public class GameCharacter extends Body {
 
     public void goTo(int x, int y) {
         if (station.getTile(x, y) != null) {
-            goals.add(new Coordinate(x, y));
+            TileInfo currentTile = station.getNearestTile(pos);
+            Coordinate pos;
+            if(goals.isEmpty()){
+                pos = new Coordinate(currentTile.getX(), currentTile.getY());
+            }else{
+                pos = goals.get(goals.size()-1);
+            }
+            goals.addAll(findGoals(pos, new Coordinate(x, y), station));
             walkingSomewhere = true;
         }
     }
@@ -107,4 +152,30 @@ public class GameCharacter extends Body {
             walkingSomewhere = false;
         }
     }
+    
+    
+    private ArrayList<Coordinate> findGoals(Coordinate currentPos, Coordinate finalGoal, Level map){
+        ArrayList<Coordinate> coords = new ArrayList<>();
+        
+        AStarPathFinder pathFinder = new AStarPathFinder(map, 100, false);
+        
+        Path p = pathFinder.findPath(null, currentPos.x, currentPos.y, finalGoal.x, finalGoal.y);
+        if(p == null){
+            coords.add(currentPos);
+        }else{
+            for (int i = 0; i < p.getLength(); i++) {
+                coords.add(new Coordinate(p.getX(i), p.getY(i)));
+            }
+        }
+        return coords;
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+
 }
