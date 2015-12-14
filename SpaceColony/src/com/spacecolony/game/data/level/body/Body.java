@@ -51,6 +51,15 @@ public abstract class Body {
         pos.y = y;
     }
     
+    public void addToPos(Vector2f pos){
+        addToPos(pos.x,pos.y);
+    }
+    
+    public void addToPos(float x, float y){
+        pos.x += x;
+        pos.y += y;
+    }
+    
     public void render(Graphics g){
     }
     

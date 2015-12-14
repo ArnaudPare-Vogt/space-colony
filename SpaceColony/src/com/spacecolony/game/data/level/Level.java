@@ -122,7 +122,7 @@ public class Level {
      * @param y the y position
      * @return the tile at the given position, or null if there is none or if the position is out of bounds
      */
-    private Tile getTile(int x, int y) {
+    public Tile getTile(int x, int y) {
         if (x < 0 || y < 0 || x >= width || y >= height) {
             return null;
         }
@@ -151,5 +151,9 @@ public class Level {
     
     private boolean isInBounds(int x, int y){
         return (x >= 0 && y >= 0 && x < width && y < height);
+    }
+    
+    public Vector2f centerOnCell(int x, int y){
+        return new Vector2f(x + .5f, y + .5f).scale(TILE_RES);
     }
 }

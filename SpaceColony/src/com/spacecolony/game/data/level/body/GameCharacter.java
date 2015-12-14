@@ -16,10 +16,14 @@
  */
 package com.spacecolony.game.data.level.body;
 
+import com.spacecolony.game.data.level.Level;
 import com.spacecolony.game.graphics.Sprite;
+import com.spacecolony.game.util.Coordinate;
+import java.util.ArrayList;
 import java.util.Random;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.geom.Vector2f;
 
 /**
  *
@@ -28,6 +32,8 @@ import org.newdawn.slick.Graphics;
 public class GameCharacter extends Body {
 
     public static final int CHAR_DEFAULT_SIZE = 8;
+
+    private static final float SPEED = 32;//in pixels/second
 
     private Sprite[] spriteDirs = new Sprite[]{
         Sprite.Chars.Default.F,
@@ -50,13 +56,19 @@ public class GameCharacter extends Body {
         new Color(0x44009999),
         new Color(0x44990099)
     };
-    
+
     private Color color;
 
-    public GameCharacter(float x, float y, Random characterGenerator) {
+    private Level station;
+    private ArrayList<Coordinate> goals = new ArrayList<>();
+    private Vector2f goalPos;
+    private boolean walkingSomewhere = false;
+
+    public GameCharacter(float x, float y, Random characterGenerator, Level station) {
+        this.station = station;
         setPos(x - CHAR_DEFAULT_SIZE / 2, y - CHAR_DEFAULT_SIZE / 2);
         setSize(CHAR_DEFAULT_SIZE, CHAR_DEFAULT_SIZE);
-        
+
         color = POSSIBLE_COLORS[characterGenerator.nextInt(POSSIBLE_COLORS.length)];
     }
 
@@ -68,6 +80,31 @@ public class GameCharacter extends Body {
 
     @Override
     public void update(float dt) {
-        
+        if (walkingSomewhere) {
+            goalPos = station.centerOnCell(goals.get(0).x, goals.get(0).y).sub(size.copy().scale(.5f));
+
+            Vector2f dp = goalPos.copy().sub(pos);
+            if (dp.lengthSquared() < SPEED * dt) {
+                setPos(station.centerOnCell(goals.get(0).x, goals.get(0).y).sub(size.copy().scale(.5f)));
+                nextGoal();
+            } else {
+                addToPos(dp.normalise().scale(SPEED * dt));
+            }
+        }
+    }
+
+    public void goTo(int x, int y) {
+        if (station.getTile(x, y) != null) {
+            goals.add(new Coordinate(x, y));
+            walkingSomewhere = true;
+        }
+    }
+
+    private void nextGoal() {
+        goals.remove(0);
+        if (goals.size() > 0) {
+        } else {
+            walkingSomewhere = false;
+        }
     }
 }

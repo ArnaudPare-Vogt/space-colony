@@ -19,7 +19,6 @@ package com.spacecolony.game.state;
 import com.spacecolony.game.Init;
 import com.spacecolony.game.data.input.PlayerInput;
 import com.spacecolony.game.data.level.Level;
-import static com.spacecolony.game.data.level.Level.TILE_RES;
 import com.spacecolony.game.data.level.TileInfo;
 import com.spacecolony.game.data.level.body.Body;
 import com.spacecolony.game.data.level.body.GameCharacter;
@@ -81,7 +80,7 @@ public class PlayState extends BasicGameState {
     @Override
     public void init(GameContainer container, StateBasedGame game) throws SlickException {
         lvl = new Level(20, 15, rnd);
-        bodies.add(new GameCharacter(10 * TILE_RES, 10 * TILE_RES, rnd));
+        bodies.add(new GameCharacter(10 * Level.TILE_RES, 10 * Level.TILE_RES, rnd, lvl));
 
         final UIButton b = new UIButton("BUILD MODE");
         b.setPos(new Vector2f(0, 50));
@@ -182,6 +181,12 @@ public class PlayState extends BasicGameState {
                 selectBody(plIn.getMousePosInGameSpace());
             }
             if (plIn.clicked(PlayerInput.MOUSE_RIGHT_BUTTON)) {
+                if(selectedCharacter != null){
+                    TileInfo tf = lvl.getNearestTile(plIn.getMousePosInGameSpace());
+                    if(tf != null && tf.getT() != null){
+                        selectedCharacter.goTo(tf.getX(), tf.getY());
+                    }
+                }
             }
             buildButton.setVisible(false);
         }
