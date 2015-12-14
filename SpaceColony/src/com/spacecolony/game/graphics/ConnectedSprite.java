@@ -23,10 +23,10 @@ import java.util.Arrays;
  * @author root
  */
 public class ConnectedSprite {
-    
+
     public static final ConnectedSprite DEFAULT_TEST = new ConnectedSprite(SpriteSheet.TEST, 16);
 
-    private Sprite[] images = new Sprite[41];
+    private Sprite[] images = new Sprite[47];
 
     public ConnectedSprite(SpriteSheet ss, int size) {
         int rowNum = ss.getWidth() / size;
@@ -55,66 +55,150 @@ public class ConnectedSprite {
         boolean bl = near[6];
         boolean bm = near[7];
         boolean br = near[8];
-        
-        if(tm){
-            if(bm){
-                if(mr){
-                    if(ml){
-                        return 15;
+
+        if (tm) {
+            if (bm) {
+                if (mr) {
+                    if (ml) {
+                        if (tl) {
+                            if (tr) {
+                                if (bl) {
+                                    if(br){
+                                        return 46;
+                                    }else{
+                                        return 33;
+                                    }
+                                } else if (br) {
+                                    return 34;
+                                } else {
+                                    return 29;
+                                }
+                            } else if (bl) {
+                                if (br) {
+                                    return 32;
+                                } else {
+                                    return 28;
+                                }
+                            } else if(br){
+                                return 45;
+                            }else {
+                                return 41;
+                            }
+                        } else if (tr) {
+                            if (br) {
+                                if (bl) {
+                                    return 35;
+                                } else {
+                                    return 30;
+                                }
+                            } else if(bl){
+                                return 44;
+                            }else {
+                                return 42;
+                            }
+                        } else if (bl) {
+                            if (br) {
+                                return 31;
+                            } else {
+                                return 40;
+                            }
+                        } else if (br) {
+                            return 43;
+                        } else {
+                            return 15;
+                        }
+                    } else {
+                        if (tr) {
+                            if (br) {
+                                return 39;
+                            } else {
+                                return 23;
+                            }
+                        } else if (br) {
+                            return 27;
+                        } else {
+                            return 14;
+                        }
                     }
-                    return 14;
-                }else if(ml){
-                    return 12;
+                } else if (ml) {
+                    if (tl) {
+                        if (bl) {
+                            return 37;
+                        } else {
+                            return 25;
+                        }
+                    } else if (bl) {
+                        return 21;
+                    } else {
+                        return 12;
+                    }
                 }
                 return 5;
-            }else if(mr){
-                if(ml){
-                    return 13;
+            } else if (mr) {
+                if (ml) {
+                    if (tr) {
+                        if (tl) {
+                            return 38;
+                        } else {
+                            return 26;
+                        }
+                    } else if (tl) {
+                        return 22;
+                    } else {
+                        return 13;
+                    }
                 }
-                if(tr){
+                if (tr) {
                     return 19;
-                }else{
+                } else {
                     return 10;
                 }
-            }else if(ml){
-                if(tl){
+            } else if (ml) {
+                if (tl) {
                     return 18;
-                }else{
+                } else {
                     return 9;
                 }
             }
             return 4;
-        }else if(mr){
-            if(bm){
-                if(ml){
-                    return 11;
+        } else if (mr) {
+            if (bm) {
+                if (ml) {
+                    if (bl) {
+                        if (br) {
+                            return 36;
+                        } else {
+                            return 24;
+                        }
+                    } else if (br) {
+                        return 20;
+                    } else {
+                        return 11;
+                    }
                 }
-                if(br){
+                if (br) {
                     return 16;
-                }else{
+                } else {
                     return 7;
                 }
-            }else if(ml){
+            } else if (ml) {
                 return 6;
             }
             return 1;
-        }else if(ml){
-            if(bm){
-                if(bl){
+        } else if (ml) {
+            if (bm) {
+                if (bl) {
                     return 17;
-                }else{
+                } else {
                     return 8;
                 }
             }
             return 2;
-        }else if(bm){
+        } else if (bm) {
             return 3;
         }
-        
-        
-        
-        
+
         return 0;
     }
-    
+
 }
