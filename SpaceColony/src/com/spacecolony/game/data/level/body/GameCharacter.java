@@ -172,15 +172,10 @@ public class GameCharacter extends Body {
 
         Coordinate lastCoord = null;
         //removing duplicates prevents wierd side paths
-        int lastIndex = -1;
         for (Iterator<Coordinate> it = coords.iterator(); it.hasNext();) {
             Coordinate coord = it.next();
             if (lastCoord != null) {
                 int i = coords.indexOf(coord);
-                if(i == lastIndex){
-                    continue;
-                }
-                lastIndex = i;
                 if (i + 1 < coords.size()) {
                     Coordinate nextCoord = coords.get(i + 1);
                     int dxLast = coord.x - lastCoord.x;
@@ -200,6 +195,7 @@ public class GameCharacter extends Body {
                             || (caseBR && (!map.blocked(pathFinder, coord.x + 1, coord.y + 1)))
                             || (caseBL && (!map.blocked(pathFinder, coord.x - 1, coord.y + 1)))) {
                         it.remove();
+                        continue;
                     }
                 }
             }
