@@ -40,6 +40,13 @@ public class Sprite {
         }
     }
     
+    public static class Machines{
+        public static final Sprite COMMAND_POST = new Sprite(SpriteSheet.MACHINES, 0, 0, 16, 16);
+        public static class TopLayer{
+            public static final Sprite COMMAND_POST = new Sprite(SpriteSheet.MACHINES, 16, 0, 16, 16);
+        }
+    }
+    
 
     private Image image;
 
@@ -47,7 +54,7 @@ public class Sprite {
         this.image = ss.getSubImage(x, y, w, h);
     }
 
-    public Image getImage() {
+    public Image getImage(int meta) {
         return image;
     }
 

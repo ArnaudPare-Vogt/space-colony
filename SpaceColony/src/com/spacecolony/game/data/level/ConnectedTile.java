@@ -19,6 +19,7 @@ package com.spacecolony.game.data.level;
 import com.spacecolony.game.graphics.ConnectedSprite;
 import com.spacecolony.game.graphics.Sprite;
 import java.util.Arrays;
+import org.newdawn.slick.Image;
 
 /**
  *
@@ -33,8 +34,8 @@ public class ConnectedTile extends Tile {
     }
 
     @Override
-    public Sprite getSprite() {
-        return tileType.getSprite(metaData);
+    public Image getImage() {
+        return tileType.getSprite().getImage(metaData);
     }
 
     @Override

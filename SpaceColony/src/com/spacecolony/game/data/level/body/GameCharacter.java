@@ -17,6 +17,7 @@
 package com.spacecolony.game.data.level.body;
 
 import com.spacecolony.game.data.level.Level;
+import com.spacecolony.game.data.level.Tile;
 import com.spacecolony.game.data.level.TileInfo;
 import com.spacecolony.game.graphics.Sprite;
 import com.spacecolony.game.util.Coordinate;
@@ -34,6 +35,11 @@ import org.newdawn.slick.util.pathfinding.Path;
  * @author 1448607
  */
 public class GameCharacter extends Body {
+    
+    public static final int ORIENTATION_FACE = 0;
+    public static final int ORIENTATION_LEFT = 1;
+    public static final int ORIENTATION_RIGHT = 2;
+    public static final int ORIENTATION_BACK = 3;
 
     public static final int CHAR_DEFAULT_SIZE = 8;
     public static final float SELECTED_CHARACTER_CIRCLE_DIAM = 8;
@@ -69,7 +75,8 @@ public class GameCharacter extends Body {
     private ArrayList<Coordinate> goals = new ArrayList<>();
     private Vector2f goalPos;
     private boolean walkingSomewhere = false;
-
+    private boolean working = false;
+    
     private int dir = 0;
 
     private boolean selected;
@@ -84,8 +91,8 @@ public class GameCharacter extends Body {
 
     @Override
     public void render(Graphics g) {
-        g.drawImage(spriteDirs[dir].getImage(), pos.x, pos.y);
-        g.drawImage(spriteDirsMask[dir].getImage(), pos.x, pos.y, color);
+        g.drawImage(spriteDirs[dir].getImage(0), pos.x, pos.y);
+        g.drawImage(spriteDirsMask[dir].getImage(0), pos.x, pos.y, color);
 
         if (selected) {
             g.setColor(Color.red);
@@ -131,7 +138,18 @@ public class GameCharacter extends Body {
             } else {
                 addToPos(dp.normalise().scale(SPEED * dt));
             }
+        } else if(!working){
+            Tile tileStandingOn = station.getNearestTile(pos).getT();
+            if (tileStandingOn.getMachine() != null) {
+                setWorking(true);
+                dir = tileStandingOn.getMachine().getOrientation();
+            }
         }
+    }
+    
+    private void setWorking(boolean w){
+        station.getNearestTile(pos).getT().setWorked(w);
+        working = w;
     }
 
     public void goTo(int x, int y) {
@@ -145,6 +163,7 @@ public class GameCharacter extends Body {
             }
             goals.addAll(findGoals(pos, new Coordinate(x, y), station));
             walkingSomewhere = true;
+            setWorking(false);
         }
     }
 

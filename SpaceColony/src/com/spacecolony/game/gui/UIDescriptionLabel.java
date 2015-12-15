@@ -14,29 +14,38 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.spacecolony.game.data.level;
+package com.spacecolony.game.gui;
 
-import com.spacecolony.game.graphics.ConnectedSprite;
-import com.spacecolony.game.graphics.Sprite;
-import com.spacecolony.game.graphics.SpriteSheet;
+import javafx.beans.property.Property;
+import org.newdawn.slick.Color;
+import org.newdawn.slick.TrueTypeFont;
 
 /**
  *
  * @author 1448607
  */
-public class TileType {
+public class UIDescriptionLabel extends UILabel{
     
-    public static final TileType DEFAULT_TYPE = new TileType(Sprite.DEFAULT_TEST);
-    public static final TileType DEFAULT_TYPE_CONNECTED = new TileType(ConnectedSprite.DEFAULT_TEST);
+    private String desc;
+    private Property<?> value;
     
-    
-    private Sprite sprite;
-
-    public TileType(Sprite sprite) {
-        this.sprite = sprite;
+    public UIDescriptionLabel(String desc, Property<?> value) {
+        super(desc + value.getValue().toString());
+        this.value = value;
+        this.desc = desc;
+        
+        value.addListener((eve)->{
+            updateText();
+        });
     }
     
-    public Sprite getSprite() {
-        return sprite;
+    private void updateText(){
+        super.setText(desc + value.getValue().toString());
+    }
+
+    @Override
+    public void setText(String text) {
+        desc = text;
+        updateText();
     }
 }

@@ -19,16 +19,20 @@ package com.spacecolony.game.state;
 import com.spacecolony.game.Init;
 import com.spacecolony.game.data.input.PlayerInput;
 import com.spacecolony.game.data.level.Level;
+import com.spacecolony.game.data.level.ResourceManager;
 import com.spacecolony.game.data.level.TileInfo;
 import com.spacecolony.game.data.level.body.Body;
 import com.spacecolony.game.data.level.body.GameCharacter;
 import com.spacecolony.game.gui.UIButton;
+import com.spacecolony.game.gui.UIDescriptionLabel;
 import com.spacecolony.game.gui.UIElement;
 import com.spacecolony.game.gui.UIFixedSizeLabel;
 import com.spacecolony.game.gui.UILabel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import javafx.beans.property.FloatProperty;
+import javafx.beans.property.SimpleFloatProperty;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
@@ -53,6 +57,8 @@ public class PlayState extends BasicGameState {
 
     private boolean isInBuildMode = false;
     private boolean didAction = false;
+    
+    private ResourceManager resourceManager;
 
     private List<UIElement> uiElements = new ArrayList<>();
     private UILabel buildButton;
@@ -63,7 +69,7 @@ public class PlayState extends BasicGameState {
     private GameCharacter selectedCharacter;
 
     private Random rnd = new Random();
-
+    
     public PlayState(int scale, int width, int height) {
         this.scale = scale;
         this.width = width;
@@ -79,6 +85,9 @@ public class PlayState extends BasicGameState {
     public void init(GameContainer container, StateBasedGame game) throws SlickException {
         lvl = new Level(20, 15, rnd);
         bodies.add(new GameCharacter((int)(10.5 * Level.TILE_RES), (int)(10.5 * Level.TILE_RES), rnd, lvl));
+        bodies.add(new GameCharacter((int)(10.5 * Level.TILE_RES), (int)(11.5 * Level.TILE_RES), rnd, lvl));
+        
+        resourceManager = new ResourceManager();
 
         final UIButton b = new UIButton("BUILD MODE");
         b.setPos(new Vector2f(0, 50));
@@ -97,6 +106,8 @@ public class PlayState extends BasicGameState {
             }
             didAction = true;
         });
+        
+        uiElements.add(new UIDescriptionLabel("Stability : ", resourceManager.getStabilityProp()));
     }
 
     @Override
@@ -108,6 +119,7 @@ public class PlayState extends BasicGameState {
         g.translate(-pos.x, -pos.y);
         lvl.render(g, pos, new Vector2f(width, height));
         renderBodies(g);
+        lvl.renderTop(g, pos, new Vector2f(width, height));
         g.popTransform();
 
         for (UIElement uiElement : uiElements) {
@@ -125,6 +137,8 @@ public class PlayState extends BasicGameState {
     public void update(GameContainer container, StateBasedGame game, int delta) throws SlickException {
         didAction = false;
         float dt = delta / 1000.f;
+        
+        resourceManager.clear();
         
         Input input = container.getInput();
         plIn.processInput(input);
@@ -148,7 +162,7 @@ public class PlayState extends BasicGameState {
             }
         }
 
-        lvl.update(dt);
+        lvl.update(dt, resourceManager);
 
         if (isInBuildMode) {
 
@@ -186,6 +200,8 @@ public class PlayState extends BasicGameState {
         for (Body body : bodies) {
             body.update(dt);
         }
+        
+        resourceManager.update(dt);
     }
 
     private void moveCamera() {

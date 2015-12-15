@@ -16,6 +16,7 @@
  */
 package com.spacecolony.game.data.level;
 
+import com.spacecolony.game.data.level.machines.Machine;
 import com.spacecolony.game.util.Coordinate;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,7 @@ import org.newdawn.slick.util.pathfinding.TileBasedMap;
  *
  * @author 1448607
  */
-public class Level implements TileBasedMap{
+public class Level implements TileBasedMap {
 
     public static final int TILE_RES = 16;
 
@@ -43,9 +44,16 @@ public class Level implements TileBasedMap{
 
         tiles = new Tile[width][height];
 
-        int x = 10,y=10;
+        int x = 10, y = 10;
 
-        tiles[x][y] = new ConnectedTile(TileType.DEFAULT_TYPE_CONNECTED);
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                buildTile(x+i, y+j);
+            }
+        }
+        
+        tiles[x][y].setMachine(Machine.COMMAND_POST);
+
     }
 
     public void render(Graphics g, Vector2f pos, Vector2f port) {
@@ -60,13 +68,40 @@ public class Level implements TileBasedMap{
         for (int i = bx; i < ex; i++) {
             for (int j = by; j < ey; j++) {
                 if (tiles[i][j] != null) {
-                    g.drawImage(tiles[i][j].getSprite().getImage(), i * TILE_RES, j * TILE_RES);
+                    tiles[i][j].render(g, i * TILE_RES, j * TILE_RES);
+                }
+            }
+        }
+    }
+    
+    public void renderTop(Graphics g, Vector2f pos, Vector2f port) {
+        int bx = (int) pos.x / TILE_RES;
+        int by = (int) pos.y / TILE_RES;
+        int ex = bx + (int) port.x / TILE_RES + 2;
+        int ey = by + (int) port.y / TILE_RES + 2;
+
+        ex = ex < width ? ex : width;
+        ey = ey < height ? ey : height;
+
+        for (int i = bx; i < ex; i++) {
+            for (int j = by; j < ey; j++) {
+                if (tiles[i][j] != null) {
+                    tiles[i][j].renderTop(g, i * TILE_RES, j * TILE_RES);
                 }
             }
         }
     }
 
-    public void update(float dt) {
+    public void update(float dt, ResourceManager rm) {
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                if(tiles[i][j] != null){
+                    if(tiles[i][j].isWorked() && tiles[i][j].getMachine() != null){
+                        tiles[i][j].getMachine().getProductor().procuce(rm);
+                    }
+                }
+            }
+        }
     }
 
     public int getWidth() {
@@ -103,8 +138,8 @@ public class Level implements TileBasedMap{
                 || (getTile(x, y - 1) != null)
                 || (getTile(x, y + 1) != null);
     }
-    
-    public Tile[] getNearTiles(int x, int y) {
+
+    public final Tile[] getNearTiles(int x, int y) {
         Tile[] nearTiles = new Tile[9];
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
@@ -114,33 +149,36 @@ public class Level implements TileBasedMap{
         nearTiles[4] = null;//no center tile
         return nearTiles;
     }
-    
-    public List<Coordinate> getNearbyCoords(Coordinate target){
+
+    public List<Coordinate> getNearbyCoords(Coordinate target) {
         List<Coordinate> coords = new ArrayList<>();
-        if(getTile(target.x + 1, target.y) != null){
+        if (getTile(target.x + 1, target.y) != null) {
             coords.add(new Coordinate(target.x + 1, target.y));
         }
-        if(getTile(target.x, target.y + 1) != null){
+        if (getTile(target.x, target.y + 1) != null) {
             coords.add(new Coordinate(target.x, target.y + 1));
         }
-        if(getTile(target.x - 1, target.y) != null){
+        if (getTile(target.x - 1, target.y) != null) {
             coords.add(new Coordinate(target.x - 1, target.y));
         }
-        if(getTile(target.x, target.y - 1) != null){
+        if (getTile(target.x, target.y - 1) != null) {
             coords.add(new Coordinate(target.x, target.y - 1));
         }
         return coords;
     }
-    
-    public float getMovCost(Coordinate t1, Coordinate t2){
+
+    public float getMovCost(Coordinate t1, Coordinate t2) {
         return 1;
     }
 
     /**
-     * Returns a tile at the given position, or null if there is none or if the position is out of bounds
+     * Returns a tile at the given position, or null if there is none or if the
+     * position is out of bounds
+     *
      * @param x the x position
      * @param y the y position
-     * @return the tile at the given position, or null if there is none or if the position is out of bounds
+     * @return the tile at the given position, or null if there is none or if
+     * the position is out of bounds
      */
     public Tile getTile(int x, int y) {
         if (x < 0 || y < 0 || x >= width || y >= height) {
@@ -156,24 +194,24 @@ public class Level implements TileBasedMap{
      * @param y the y position of the tile
      */
     public void buildTile(int x, int y) {
-        if(isInBounds(x,y)){
+        if (isInBounds(x, y)) {
             tiles[x][y] = new ConnectedTile(TileType.DEFAULT_TYPE_CONNECTED);
         }
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++) {
                 Tile t = getTile(x + i, y + j);
-                if(t != null){
+                if (t != null) {
                     t.refresh(getNearTiles(x + i, y + j));
                 }
             }
         }
     }
-    
-    private boolean isInBounds(int x, int y){
+
+    private boolean isInBounds(int x, int y) {
         return (x >= 0 && y >= 0 && x < width && y < height);
     }
-    
-    public Vector2f centerOnCell(int x, int y){
+
+    public Vector2f centerOnCell(int x, int y) {
         return new Vector2f(x + .5f, y + .5f).scale(TILE_RES);
     }
 
@@ -193,7 +231,7 @@ public class Level implements TileBasedMap{
 
     @Override
     public boolean blocked(PathFindingContext context, int tx, int ty) {
-        return getTile(tx, ty)==null;
+        return getTile(tx, ty) == null;
     }
 
     @Override

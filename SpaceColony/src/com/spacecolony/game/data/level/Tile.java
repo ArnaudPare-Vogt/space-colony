@@ -16,7 +16,10 @@
  */
 package com.spacecolony.game.data.level;
 
+import com.spacecolony.game.data.level.machines.Machine;
 import com.spacecolony.game.graphics.Sprite;
+import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Image;
 
 /**
  *
@@ -26,13 +29,22 @@ public class Tile {
     
     protected final TileType tileType;
     private int tileIndex = 0;
+    
+    private boolean worked = false;
+    
+    private Machine machine;
 
     public Tile(TileType tileType) {
+        this(tileType,null);
+    }
+
+    public Tile(TileType tileType, Machine machine) {
         this.tileType = tileType;
+        this.machine = machine;
     }
     
     public Sprite getSprite(){
-        return tileType.getSprite(0);
+        return tileType.getSprite();
     }
 
     public TileType getTileType() {
@@ -41,5 +53,39 @@ public class Tile {
     
     public void refresh(Tile[] adjTiles){
     }
+
+    public Image getImage() {
+        return getSprite().getImage(0);
+    }
     
+    public void render(Graphics g, float xPos, float yPos){
+        g.drawImage(getImage(), xPos, yPos);
+        if(machine != null){
+            g.drawImage(machine.getImage(), xPos, yPos);
+        }
+    }
+
+    public void setMachine(Machine machine) {
+        this.machine = machine;
+    }
+
+    public Machine getMachine() {
+        return machine;
+    }
+    
+    
+
+    void renderTop(Graphics g, int xPos, int yPos) {
+        if(machine != null){
+            g.drawImage(machine.getTopImage(), xPos, yPos);
+        }
+    }
+
+    public void setWorked(boolean worked) {
+        this.worked = worked;
+    }
+
+    public boolean isWorked() {
+        return worked;
+    }
 }

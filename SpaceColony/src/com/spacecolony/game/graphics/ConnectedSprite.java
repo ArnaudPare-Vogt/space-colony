@@ -17,33 +17,36 @@
 package com.spacecolony.game.graphics;
 
 import java.util.Arrays;
+import org.newdawn.slick.Image;
 
 /**
  *
  * @author root
  */
-public class ConnectedSprite {
+public class ConnectedSprite extends Sprite{
 
     public static final ConnectedSprite DEFAULT_TEST = new ConnectedSprite(SpriteSheet.TEST, 16);
 
-    private Sprite[] images = new Sprite[47];
+    private Image[] images = new Image[47];
 
     public ConnectedSprite(SpriteSheet ss, int size) {
+        super(ss, 0, 0, size, size);
         int rowNum = ss.getWidth() / size;
 
         int i = 0;
         int k = 0;
         while (i < images.length) {
             for (int j = 0; (j < rowNum) && i < images.length; j++) {
-                images[i] = new Sprite(ss, j * size, k * size, size, size);
+                images[i] = ss.getSubImage(j * size, k * size, size, size);
                 i++;
             }
             k++;
         }
     }
 
-    public Sprite getSprite(int i) {
-        return images[i];
+    @Override
+    public Image getImage(int meta) {
+        return images[meta];
     }
 
     public static int getMetaFromNearTable(boolean[] near) {

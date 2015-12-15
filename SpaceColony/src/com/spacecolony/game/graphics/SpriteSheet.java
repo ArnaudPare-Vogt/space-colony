@@ -31,6 +31,7 @@ public class SpriteSheet{
     
     public static final SpriteSheet TEST = new SpriteSheet("Images/Test.png");
     public static final SpriteSheet CHARACTERS = new SpriteSheet("Images/Characters.png");
+    public static final SpriteSheet MACHINES = new SpriteSheet("Images/Machines.png");
     
     private static final ExceptionThrower THROWER = new ExceptionThrower();
 

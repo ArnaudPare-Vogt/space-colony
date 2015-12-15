@@ -14,29 +14,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.spacecolony.game.data.level;
+package com.spacecolony.game.data.level.machines;
 
-import com.spacecolony.game.graphics.ConnectedSprite;
-import com.spacecolony.game.graphics.Sprite;
-import com.spacecolony.game.graphics.SpriteSheet;
+import com.spacecolony.game.data.level.ResourceManager;
 
 /**
  *
  * @author 1448607
  */
-public class TileType {
-    
-    public static final TileType DEFAULT_TYPE = new TileType(Sprite.DEFAULT_TEST);
-    public static final TileType DEFAULT_TYPE_CONNECTED = new TileType(ConnectedSprite.DEFAULT_TEST);
-    
-    
-    private Sprite sprite;
+public interface ResourceProductor {
 
-    public TileType(Sprite sprite) {
-        this.sprite = sprite;
-    }
+    public abstract void procuce(ResourceManager rm);
     
-    public Sprite getSprite() {
-        return sprite;
-    }
 }
