@@ -21,6 +21,7 @@ import com.spacecolony.game.data.level.TileInfo;
 import com.spacecolony.game.graphics.Sprite;
 import com.spacecolony.game.util.Coordinate;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
@@ -35,7 +36,8 @@ import org.newdawn.slick.util.pathfinding.Path;
 public class GameCharacter extends Body {
 
     public static final int CHAR_DEFAULT_SIZE = 8;
-    public static final float SELECTED_CHARACTER_CIRCLE_RADIUS = 8;
+    public static final float SELECTED_CHARACTER_CIRCLE_DIAM = 8;
+    public static final float SELECTED_CHARACTER_NODE_CIRCLE_DIAM = 2;
 
     private static final float SPEED = 32;//in pixels/second
 
@@ -67,9 +69,9 @@ public class GameCharacter extends Body {
     private ArrayList<Coordinate> goals = new ArrayList<>();
     private Vector2f goalPos;
     private boolean walkingSomewhere = false;
-    
+
     private int dir = 0;
-    
+
     private boolean selected;
 
     public GameCharacter(float x, float y, Random characterGenerator, Level station) {
@@ -84,17 +86,18 @@ public class GameCharacter extends Body {
     public void render(Graphics g) {
         g.drawImage(spriteDirs[dir].getImage(), pos.x, pos.y);
         g.drawImage(spriteDirsMask[dir].getImage(), pos.x, pos.y, color);
-        
-        if(selected){
+
+        if (selected) {
             g.setColor(Color.red);
             Vector2f cent = getCenter();
-            g.drawOval(cent.x - SELECTED_CHARACTER_CIRCLE_RADIUS / 2, cent.y - SELECTED_CHARACTER_CIRCLE_RADIUS / 2, SELECTED_CHARACTER_CIRCLE_RADIUS, SELECTED_CHARACTER_CIRCLE_RADIUS);
-            
-            if(!goals.isEmpty()){
-                Vector2f lastPos = size.copy().scale(1/2.f).add(pos);
+            g.drawOval(cent.x - SELECTED_CHARACTER_CIRCLE_DIAM / 2, cent.y - SELECTED_CHARACTER_CIRCLE_DIAM / 2, SELECTED_CHARACTER_CIRCLE_DIAM, SELECTED_CHARACTER_CIRCLE_DIAM);
+
+            if (!goals.isEmpty()) {
+                Vector2f lastPos = size.copy().scale(1 / 2.f).add(pos);
                 for (int i = 0; i < goals.size(); i++) {
                     Vector2f newPos = station.centerOnCell(goals.get(i).x, goals.get(i).y);
                     g.drawLine(lastPos.x, lastPos.y, newPos.x, newPos.y);
+                    g.drawOval(newPos.x - SELECTED_CHARACTER_NODE_CIRCLE_DIAM / 2, newPos.y - SELECTED_CHARACTER_NODE_CIRCLE_DIAM / 2, SELECTED_CHARACTER_NODE_CIRCLE_DIAM, SELECTED_CHARACTER_NODE_CIRCLE_DIAM);
                     lastPos = newPos;
                 }
             }
@@ -107,21 +110,21 @@ public class GameCharacter extends Body {
             goalPos = station.centerOnCell(goals.get(0).x, goals.get(0).y).sub(size.copy().scale(.5f));
 
             Vector2f dp = goalPos.copy().sub(pos);
-            
-            if(Math.abs(dp.getX()) < Math.abs(dp.getY())){
-                if(dp.getY() > 0){
+
+            if (Math.abs(dp.getX()) < Math.abs(dp.getY())) {
+                if (dp.getY() > 0) {
                     dir = 0;
-                }else{
+                } else {
                     dir = 3;
                 }
-            }else{
-                if(dp.getX() > 0){
+            } else {
+                if (dp.getX() > 0) {
                     dir = 2;
-                }else{
+                } else {
                     dir = 1;
                 }
             }
-            
+
             if (dp.lengthSquared() < SPEED * dt) {
                 setPos(station.centerOnCell(goals.get(0).x, goals.get(0).y).sub(size.copy().scale(.5f)));
                 nextGoal();
@@ -135,10 +138,10 @@ public class GameCharacter extends Body {
         if (station.getTile(x, y) != null) {
             TileInfo currentTile = station.getNearestTile(pos);
             Coordinate pos;
-            if(goals.isEmpty()){
+            if (goals.isEmpty()) {
                 pos = new Coordinate(currentTile.getX(), currentTile.getY());
-            }else{
-                pos = goals.get(goals.size()-1);
+            } else {
+                pos = goals.get(goals.size() - 1);
             }
             goals.addAll(findGoals(pos, new Coordinate(x, y), station));
             walkingSomewhere = true;
@@ -152,21 +155,57 @@ public class GameCharacter extends Body {
             walkingSomewhere = false;
         }
     }
-    
-    
-    private ArrayList<Coordinate> findGoals(Coordinate currentPos, Coordinate finalGoal, Level map){
+
+    private ArrayList<Coordinate> findGoals(Coordinate currentPos, Coordinate finalGoal, Level map) {
         ArrayList<Coordinate> coords = new ArrayList<>();
-        
+
         AStarPathFinder pathFinder = new AStarPathFinder(map, 100, false);
-        
+
         Path p = pathFinder.findPath(null, currentPos.x, currentPos.y, finalGoal.x, finalGoal.y);
-        if(p == null){
+        if (p == null) {
             coords.add(currentPos);
-        }else{
+        } else {
             for (int i = 0; i < p.getLength(); i++) {
                 coords.add(new Coordinate(p.getX(i), p.getY(i)));
             }
         }
+
+        Coordinate lastCoord = null;
+        //removing duplicates prevents wierd side paths
+        int lastIndex = -1;
+        for (Iterator<Coordinate> it = coords.iterator(); it.hasNext();) {
+            Coordinate coord = it.next();
+            if (lastCoord != null) {
+                int i = coords.indexOf(coord);
+                if(i == lastIndex){
+                    continue;
+                }
+                lastIndex = i;
+                if (i + 1 < coords.size()) {
+                    Coordinate nextCoord = coords.get(i + 1);
+                    int dxLast = coord.x - lastCoord.x;
+                    int dyLast = coord.y - lastCoord.y;
+                    int dxNext = nextCoord.x - coord.x;
+                    int dyNext = nextCoord.y - coord.y;
+                    boolean caseTR = ((dxLast == -1) && (dyLast == 0) && (dxNext == 0) && (dyNext == -1))
+                            || ((dxLast == 0) && (dyLast == 1) && (dxNext == 1) && (dyNext == 0));
+                    boolean caseTL = ((dxLast == 0) && (dyLast == 1) && (dxNext == -1) && (dyNext == 0))
+                            || ((dxLast == 1) && (dyLast == 0) && (dxNext == 0) && (dyNext == -1));
+                    boolean caseBR = ((dxLast == -1) && (dyLast == 0) && (dxNext == 0) && (dyNext == 1))
+                            || ((dxLast == 0) && (dyLast == -1) && (dxNext == 1) && (dyNext == 0));
+                    boolean caseBL = ((dxLast == 1) && (dyLast == 0) && (dxNext == 0) && (dyNext == 1))
+                            || ((dxLast == 0) && (dyLast == -1) && (dxNext == -1) && (dyNext == 0));
+                    if ((caseTR && (!map.blocked(pathFinder, coord.x + 1, coord.y - 1)))
+                            || (caseTL && (!map.blocked(pathFinder, coord.x - 1, coord.y - 1)))
+                            || (caseBR && (!map.blocked(pathFinder, coord.x + 1, coord.y + 1)))
+                            || (caseBL && (!map.blocked(pathFinder, coord.x - 1, coord.y + 1)))) {
+                        it.remove();
+                    }
+                }
+            }
+            lastCoord = coord;
+        }
+
         return coords;
     }
 
