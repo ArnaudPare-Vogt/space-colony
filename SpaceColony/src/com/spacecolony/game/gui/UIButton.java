@@ -23,7 +23,7 @@ import org.newdawn.slick.TrueTypeFont;
  *
  * @author 1448607
  */
-public class UIButton extends UILabel{
+public class UIButton extends UILabel {
 
     protected Color onNothingColor;
     protected Color onHoverColor;
@@ -33,7 +33,7 @@ public class UIButton extends UILabel{
     public UIButton(String text) {
         this(text, new Color(0x77000000), new Color(0xdd000000));
     }
-    
+
     public UIButton(String text, Color onHoverColor, Color onClickColor) {
         super(text);
         this.onHoverColor = onHoverColor;
@@ -55,7 +55,9 @@ public class UIButton extends UILabel{
     @Override
     public void clicked() {
         background = onClickColor;
-        onClickAction.run();
+        if (onClickAction != null) {
+            onClickAction.run();
+        }
     }
 
     @Override

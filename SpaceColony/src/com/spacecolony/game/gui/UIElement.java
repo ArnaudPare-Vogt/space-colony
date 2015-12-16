@@ -16,6 +16,7 @@
  */
 package com.spacecolony.game.gui;
 
+import java.util.List;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.geom.Shape;
@@ -29,9 +30,9 @@ public abstract class UIElement {
 
     protected Vector2f pos = new Vector2f();
     protected Vector2f size = new Vector2f();
-    
+
     private boolean mouseWasIn = false;
-    
+
     protected boolean visible = true;
 
     public UIElement() {
@@ -54,41 +55,41 @@ public abstract class UIElement {
         pos.x = x;
         pos.y = y;
     }
-    
-    public final void repaint(Graphics g){
-        if(isVisible()){
+
+    public final void repaint(Graphics g) {
+        if (isVisible()) {
             render(g);
         }
     }
-    
-    public void render(Graphics g){
+
+    public void render(Graphics g) {
     }
-    
-    public void clicked(){
+
+    public void clicked() {
     }
-    
-    public Shape getBoundingBox(){
+
+    public Shape getBoundingBox() {
         return new Rectangle(pos.x, pos.y, size.x, size.y);
     }
 
     public final void mouseIn() {
-        if(!mouseWasIn){
+        if (!mouseWasIn) {
             mouseEnter();
             mouseWasIn = true;
         }
     }
 
     public final void mouseOut() {
-        if(mouseWasIn){
+        if (mouseWasIn) {
             mouseExit();
             mouseWasIn = false;
         }
     }
-    
-    public void mouseEnter(){
+
+    public void mouseEnter() {
     }
-    
-    public void mouseExit(){
+
+    public void mouseExit() {
     }
 
     public void mouseReleased() {
@@ -100,5 +101,12 @@ public abstract class UIElement {
 
     public boolean isVisible() {
         return visible;
+    }
+
+    public List<UIElement> getChildrens() {
+        return null;
+    }
+
+    public void update(float dt) {
     }
 }

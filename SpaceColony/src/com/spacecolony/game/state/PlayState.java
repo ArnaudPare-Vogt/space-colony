@@ -28,6 +28,7 @@ import com.spacecolony.game.gui.UIDescriptionLabel;
 import com.spacecolony.game.gui.UIElement;
 import com.spacecolony.game.gui.UIFixedSizeLabel;
 import com.spacecolony.game.gui.UILabel;
+import com.spacecolony.game.gui.UIList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -57,7 +58,7 @@ public class PlayState extends BasicGameState {
 
     private boolean isInBuildMode = false;
     private boolean didAction = false;
-    
+
     private ResourceManager resourceManager;
 
     private List<UIElement> uiElements = new ArrayList<>();
@@ -69,7 +70,7 @@ public class PlayState extends BasicGameState {
     private GameCharacter selectedCharacter;
 
     private Random rnd = new Random();
-    
+
     public PlayState(int scale, int width, int height) {
         this.scale = scale;
         this.width = width;
@@ -84,9 +85,9 @@ public class PlayState extends BasicGameState {
     @Override
     public void init(GameContainer container, StateBasedGame game) throws SlickException {
         lvl = new Level(20, 15, rnd);
-        bodies.add(new GameCharacter((int)(10.5 * Level.TILE_RES), (int)(10.5 * Level.TILE_RES), rnd, lvl));
-        bodies.add(new GameCharacter((int)(10.5 * Level.TILE_RES), (int)(11.5 * Level.TILE_RES), rnd, lvl));
-        
+        bodies.add(new GameCharacter((int) (10.5 * Level.TILE_RES), (int) (10.5 * Level.TILE_RES), rnd, lvl));
+        bodies.add(new GameCharacter((int) (10.5 * Level.TILE_RES), (int) (11.5 * Level.TILE_RES), rnd, lvl));
+
         resourceManager = new ResourceManager();
 
         final UIButton b = new UIButton("BUILD MODE");
@@ -106,8 +107,16 @@ public class PlayState extends BasicGameState {
             }
             didAction = true;
         });
-        
-        uiElements.add(new UIDescriptionLabel("Stability : ", resourceManager.getStabilityProp()));
+
+        UIList list = new UIList();
+        list.addElement(new UIDescriptionLabel("Stability : ", resourceManager.getStabilityProp()));
+        list.addElement(new UIDescriptionLabel("Stability : ", resourceManager.getStabilityProp()));
+        list.addElement(new UIButton("BUILD MODE"));
+
+        list.setPos(new Vector2f(0, 200));
+
+        uiElements.add(list);
+
     }
 
     @Override
@@ -137,30 +146,19 @@ public class PlayState extends BasicGameState {
     public void update(GameContainer container, StateBasedGame game, int delta) throws SlickException {
         didAction = false;
         float dt = delta / 1000.f;
-        
+
         resourceManager.clear();
-        
+
         Input input = container.getInput();
         plIn.processInput(input);
 
         moveCamera();
-        
+
         if (input.isKeyDown(Input.KEY_ESCAPE)) {
             container.exit();
         }
 
-        for (UIElement uiElement : uiElements) {
-            if (uiElement.getBoundingBox().contains(input.getMouseX(), input.getMouseY())) {
-                uiElement.mouseIn();
-                if (plIn.clicked(PlayerInput.MOUSE_LEFT_BUTTON)) {
-                    uiElement.clicked();
-                } else if (plIn.wasMouseRelesed(PlayerInput.MOUSE_LEFT_BUTTON)) {
-                    uiElement.mouseReleased();
-                }
-            } else {
-                uiElement.mouseOut();
-            }
-        }
+        updateUI(dt, uiElements);
 
         lvl.update(dt, resourceManager);
 
@@ -187,9 +185,9 @@ public class PlayState extends BasicGameState {
                 selectBody(plIn.getMousePosInGameSpace());
             }
             if (plIn.clicked(PlayerInput.MOUSE_RIGHT_BUTTON)) {
-                if(selectedCharacter != null){
+                if (selectedCharacter != null) {
                     TileInfo tf = lvl.getNearestTile(plIn.getMousePosInGameSpace());
-                    if(tf != null && tf.getT() != null){
+                    if (tf != null && tf.getT() != null) {
                         selectedCharacter.goTo(tf.getX(), tf.getY());
                     }
                 }
@@ -200,7 +198,7 @@ public class PlayState extends BasicGameState {
         for (Body body : bodies) {
             body.update(dt);
         }
-        
+
         resourceManager.update(dt);
     }
 
@@ -221,8 +219,31 @@ public class PlayState extends BasicGameState {
         }
     }
 
+    private void updateUI(float dt, List<UIElement> uiElementsList) {
+        for (UIElement uiElement : uiElementsList) {
+            updateSingleUIElement(dt, uiElement);
+            if(uiElement.getChildrens() != null){
+                updateUI(dt, uiElement.getChildrens());
+            }
+        }
+    }
+
+    private void updateSingleUIElement(float dt, UIElement uiElement) {
+        uiElement.update(dt);
+        if (uiElement.getBoundingBox().contains(plIn.getMouseX(), plIn.getMouseY())) {
+            uiElement.mouseIn();
+            if (plIn.clicked(PlayerInput.MOUSE_LEFT_BUTTON)) {
+                uiElement.clicked();
+            } else if (plIn.wasMouseRelesed(PlayerInput.MOUSE_LEFT_BUTTON)) {
+                uiElement.mouseReleased();
+            }
+        } else {
+            uiElement.mouseOut();
+        }
+    }
+
     public void selectBody(Vector2f position) {
-        if(selectedCharacter != null){
+        if (selectedCharacter != null) {
             selectedCharacter.setSelected(false);
         }
         selectedCharacter = null;

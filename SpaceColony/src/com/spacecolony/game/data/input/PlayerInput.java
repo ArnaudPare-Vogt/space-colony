@@ -130,4 +130,11 @@ public class PlayerInput {
         return mouseDelta[mouseButtonBtn];
     }
 
+    public int getMouseX(){
+        return input.getMouseX();
+    }
+    
+    public int getMouseY(){
+        return input.getMouseY();
+    }
 }
