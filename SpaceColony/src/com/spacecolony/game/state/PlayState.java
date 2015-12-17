@@ -20,9 +20,11 @@ import com.spacecolony.game.Init;
 import com.spacecolony.game.data.input.PlayerInput;
 import com.spacecolony.game.data.level.Level;
 import com.spacecolony.game.data.level.ResourceManager;
+import com.spacecolony.game.data.level.Tile;
 import com.spacecolony.game.data.level.TileInfo;
 import com.spacecolony.game.data.level.body.Body;
 import com.spacecolony.game.data.level.body.GameCharacter;
+import com.spacecolony.game.data.level.machines.Machine;
 import com.spacecolony.game.gui.UIButton;
 import com.spacecolony.game.gui.UIDescriptionLabel;
 import com.spacecolony.game.gui.UIElement;
@@ -32,8 +34,8 @@ import com.spacecolony.game.gui.UIList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import javafx.beans.property.FloatProperty;
-import javafx.beans.property.SimpleFloatProperty;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
@@ -57,7 +59,10 @@ public class PlayState extends BasicGameState {
     private Vector2f pos = new Vector2f(0, 0);
 
     private boolean isInBuildMode = false;
+    private BooleanProperty isInMachineUpgradeMode = new SimpleBooleanProperty(false);
     private boolean didAction = false;
+
+    private TileInfo targetTile = null;
 
     private ResourceManager resourceManager;
 
@@ -93,6 +98,9 @@ public class PlayState extends BasicGameState {
         UIList list = initStatsMenu();
         uiElements.add(list);
 
+        UIList buildList = initMachineList();
+        uiElements.add(buildList);
+
         final UIButton b = new UIButton("BUILD MODE");
         b.setPos(new Vector2f(0, 50));
         uiElements.add(b);
@@ -102,7 +110,14 @@ public class PlayState extends BasicGameState {
         uiElements.add(buildButton);
 
         b.setOnClickAction(() -> {
-            isInBuildMode = !isInBuildMode;
+            if(isInBuildMode){
+                isInBuildMode = false;
+            }else{
+                if(isInMachineUpgradeMode.get()){
+                    isInMachineUpgradeMode.set(false);
+                }
+                isInBuildMode = true;
+            }
             list.setVisible(!isInBuildMode);
             if (isInBuildMode) {
                 b.setText("EXIT BUILD MODE");
@@ -146,6 +161,32 @@ public class PlayState extends BasicGameState {
         list.setPos(new Vector2f(0, height * scale));
 
         list.setDampen(true);
+
+        return list;
+    }
+
+    private UIList initMachineList() {
+        UIList list = new UIList();
+        list.setPos(width * scale, 0);
+        list.setAnchor(UIElement.Anchor.TOP_RIGHT);
+
+        final UIButton[] descLabels = new UIButton[2];
+        descLabels[0] = new UIButton("Controll Center");
+        descLabels[1] = new UIButton("O2 Generator");
+
+        descLabels[0].setOnClickAction(()->{
+            PlayState.this.buildMachineAtSelectedPos(Machine.COMMAND_POST);
+        });
+        
+        descLabels[1].setOnClickAction(()->{
+            PlayState.this.buildMachineAtSelectedPos(Machine.O2_GENERATOR);
+        });
+        
+        for (UIElement descLabel : descLabels) {
+            list.addElement(descLabel);
+        }
+
+        list.getVisibleProprety().bind(isInMachineUpgradeMode);
 
         return list;
     }
@@ -196,20 +237,41 @@ public class PlayState extends BasicGameState {
         if (isInBuildMode) {
 
             TileInfo tf = lvl.getNearestTile(plIn.getMousePosInGameSpace());
-            if (tf != null && tf.getT() == null) {//its a spot and there is no tile yet
+            if (tf != null) {//its a spot
+
                 Vector2f bbPos = tf.getFloatPos().sub(pos).scale(((float) scale));
                 buildButton.setPos(bbPos);
 
-                if (lvl.isNextToTile(tf.getX(), tf.getY())) {
-                    buildButton.setVisible(true);
-                    if (plIn.clicked(PlayerInput.MOUSE_LEFT_BUTTON) && !didAction) {
-                        lvl.buildTile(tf.getX(), tf.getY());
+                if (tf.getT() == null) {//if there is no tile
+                    buildButton.setText("X");
+                    if (lvl.isNextToTile(tf.getX(), tf.getY())) {
+                        buildButton.setVisible(true);
+                        if (plIn.clicked(PlayerInput.MOUSE_LEFT_BUTTON) && !didAction) {
+                            lvl.buildTile(tf.getX(), tf.getY());
+                        }
+                    } else {
+                        buildButton.setVisible(false);
                     }
                 } else {
-                    buildButton.setVisible(false);
+                    buildButton.setText("U");
+                    buildButton.setVisible(true);
+                    if (plIn.clicked(PlayerInput.MOUSE_LEFT_BUTTON)) {
+                        isInBuildMode = false;
+                        isInMachineUpgradeMode.set(true);
+                        targetTile = tf;
+                    }
                 }
             } else {
                 buildButton.setVisible(false);
+            }
+        } else if (isInMachineUpgradeMode.get()) {
+            TileInfo tf = lvl.getTileAt(targetTile.getX(), targetTile.getY());
+            Vector2f bbPos = tf.getFloatPos().sub(pos).scale(((float) scale));
+            buildButton.setPos(bbPos);
+
+            if(plIn.clicked(PlayerInput.MOUSE_RIGHT_BUTTON)){
+                isInBuildMode = true;
+                isInMachineUpgradeMode.set(false);
             }
         } else {
             if (plIn.clicked(PlayerInput.MOUSE_LEFT_BUTTON)) {
@@ -252,7 +314,7 @@ public class PlayState extends BasicGameState {
 
     private void updateUI(float dt, List<UIElement> uiElementsList) {
         for (UIElement uiElement : uiElementsList) {
-            if(uiElement.isVisible()){
+            if (uiElement.isVisible()) {
                 updateSingleUIElement(dt, uiElement);
                 if (uiElement.getChildrens() != null) {
                     updateUI(dt, uiElement.getChildrens());
@@ -290,6 +352,17 @@ public class PlayState extends BasicGameState {
                     }
                 }
             }
+        }
+    }
+    
+    public void buildMachineAtSelectedPos(Machine toBuild){
+        if(isInMachineUpgradeMode.get()){
+            Tile t = lvl.getTile(targetTile.getX(), targetTile.getY());
+            if(t != null){
+                t.setMachine(toBuild);
+            }
+            isInMachineUpgradeMode.set(false);
+            isInBuildMode = true;
         }
     }
 }

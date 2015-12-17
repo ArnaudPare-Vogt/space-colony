@@ -115,6 +115,10 @@ public class Level implements TileBasedMap {
     public TileInfo getNearestTile(Vector2f floatPosition) {
         int x = (int) (floatPosition.x / TILE_RES);
         int y = (int) (floatPosition.y / TILE_RES);
+        return getTileAt(x, y);
+    }
+    
+    public TileInfo getTileAt(int x, int y){
         if (x >= 0 && y >= 0 && x < width && y < height) {
             return new TileInfo(tiles[x][y], x, y, x * TILE_RES, y * TILE_RES);
         }

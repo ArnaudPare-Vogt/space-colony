@@ -32,6 +32,10 @@ public class Machine {
         rm.stabilityAugment(1);
     });
     
+    public static final Machine O2_GENERATOR = new Machine("O2 generator", 70, false, false, Sprite.Machines.O2_GENERATOR, Sprite.Machines.TopLayer.O2_GENERATOR, -1, (rm)->{
+        rm.stabilityAugment(1);
+    });
+    
     private String name;
     private int totalHP;
     private boolean manned;
@@ -71,5 +75,9 @@ public class Machine {
 
     public ResourceProductor getProductor() {
         return productor;
+    }
+
+    public boolean isManned() {
+        return manned;
     }
 }

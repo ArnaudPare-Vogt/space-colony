@@ -42,8 +42,10 @@ public class Sprite {
     
     public static class Machines{
         public static final Sprite COMMAND_POST = new Sprite(SpriteSheet.MACHINES, 0, 0, 16, 16);
+        public static final Sprite O2_GENERATOR = new Sprite(SpriteSheet.MACHINES, 0, 16, 16, 16);
         public static class TopLayer{
             public static final Sprite COMMAND_POST = new Sprite(SpriteSheet.MACHINES, 16, 0, 16, 16);
+            public static final Sprite O2_GENERATOR = new Sprite(SpriteSheet.MACHINES, 16, 16, 16, 16);
         }
     }
     

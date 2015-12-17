@@ -141,8 +141,10 @@ public class GameCharacter extends Body {
         } else if(!working){
             Tile tileStandingOn = station.getNearestTile(pos).getT();
             if (tileStandingOn.getMachine() != null) {
-                setWorking(true);
-                dir = tileStandingOn.getMachine().getOrientation();
+                if(tileStandingOn.getMachine().isManned()){
+                    setWorking(true);
+                    dir = tileStandingOn.getMachine().getOrientation();
+                }
             }
         }
     }
@@ -190,7 +192,6 @@ public class GameCharacter extends Body {
         }
 
         Coordinate lastCoord = null;
-        //removing duplicates prevents wierd side paths
         for (Iterator<Coordinate> it = coords.iterator(); it.hasNext();) {
             Coordinate coord = it.next();
             if (lastCoord != null) {

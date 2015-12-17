@@ -22,6 +22,8 @@ import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.geom.Shape;
 import org.newdawn.slick.geom.Vector2f;
 import static com.spacecolony.game.gui.UIElement.Anchor.*;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 
 /**
  *
@@ -30,7 +32,7 @@ import static com.spacecolony.game.gui.UIElement.Anchor.*;
 public abstract class UIElement {
 
     public enum Anchor {
-        TOP_LEFT, BOTTOM_LEFT
+        TOP_LEFT, BOTTOM_LEFT, TOP_RIGHT
     }
 
     private Vector2f pos = new Vector2f();
@@ -41,7 +43,7 @@ public abstract class UIElement {
 
     private boolean mouseWasIn = false;
 
-    protected boolean visible = true;
+    protected final BooleanProperty visible = new SimpleBooleanProperty(true);
 
     public UIElement() {
     }
@@ -137,10 +139,14 @@ public abstract class UIElement {
     }
 
     public void setVisible(boolean visible) {
-        this.visible = visible;
+        this.visible.set(visible);
     }
 
     public boolean isVisible() {
+        return visible.get();
+    }
+    
+    public BooleanProperty getVisibleProprety(){
         return visible;
     }
 
@@ -169,6 +175,10 @@ public abstract class UIElement {
             case BOTTOM_LEFT:
                 posDecal.x = 0;
                 posDecal.y = -size.y;
+                break;
+            case TOP_RIGHT:
+                posDecal.x = -size.x;
+                posDecal.y = 0;
                 break;
         }
     }
