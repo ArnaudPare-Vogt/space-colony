@@ -29,12 +29,12 @@ public class UIFixedSizeLabel extends UILabel {
 
     public UIFixedSizeLabel(String text, Vector2f size) {
         super(text);
-        this.size = size;
+        setSize(size);
     }
 
     public UIFixedSizeLabel(Vector2f size, Color background, Color fontColor, TrueTypeFont font, String text, float padding) {
         super(background, fontColor, font, text, padding);
-        this.size = size;
+        setSize(size);
     }
 
     @Override
@@ -47,9 +47,9 @@ public class UIFixedSizeLabel extends UILabel {
         int w = font.getWidth(text);
 
         g.setColor(background);
-        g.fillRect(pos.x, pos.y, size.x, size.y);
+        g.fillRect(getPos().x, getPos().y, getSize().x, getSize().y);
         g.setColor(fontColor);
-        g.drawString(text, pos.x + (size.x - w) / 2, pos.y + (size.y - h) / 2);
+        g.drawString(text, getPos().x + (getSize().x - w) / 2, getPos().y + (getSize().y - h) / 2);
     }
 
 }

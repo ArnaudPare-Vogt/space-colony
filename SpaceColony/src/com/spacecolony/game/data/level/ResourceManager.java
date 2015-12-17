@@ -40,14 +40,21 @@ public class ResourceManager {
      * <li>etc...</li>
      * </ul>
      */
-    private FloatProperty stabilityProp = new  SimpleFloatProperty(1.f);
+    private FloatProperty stabilityProp = new SimpleFloatProperty(1.f);
+    
+    /**
+     * The rate at which the oxygen regenerates.
+     */
+    private FloatProperty oxygenRegenLevelProp = new SimpleFloatProperty(1.f);
     
     private float stability = 1.f;
+    private float oxygenRegenLevel = 1.f;
     
     
     
     public void clear(){
         stability = 0;
+        oxygenRegenLevel = 0;
     }
     
     public void update(float dt){
@@ -58,6 +65,7 @@ public class ResourceManager {
         }
         
         stabilityProp.set(stability);
+        oxygenRegenLevelProp.set(oxygenRegenLevel);
     }
     
     public void stabilityAugment(int level){
@@ -70,5 +78,13 @@ public class ResourceManager {
 
     public FloatProperty getStabilityProp() {
         return stabilityProp;
+    }
+
+    public float getOxygenRegenLevel() {
+        return oxygenRegenLevelProp.floatValue();
+    }
+
+    public FloatProperty getOxygenRegenLevelProp() {
+        return oxygenRegenLevelProp;
     }
 }

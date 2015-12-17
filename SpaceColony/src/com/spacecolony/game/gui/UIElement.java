@@ -21,6 +21,7 @@ import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.geom.Shape;
 import org.newdawn.slick.geom.Vector2f;
+import static com.spacecolony.game.gui.UIElement.Anchor.*;
 
 /**
  *
@@ -28,8 +29,15 @@ import org.newdawn.slick.geom.Vector2f;
  */
 public abstract class UIElement {
 
-    protected Vector2f pos = new Vector2f();
-    protected Vector2f size = new Vector2f();
+    public enum Anchor {
+        TOP_LEFT, BOTTOM_LEFT
+    }
+
+    private Vector2f pos = new Vector2f();
+    private Vector2f size = new Vector2f();
+
+    private Anchor anchor = TOP_LEFT;
+    private final Vector2f posDecal = new Vector2f();
 
     private boolean mouseWasIn = false;
 
@@ -40,20 +48,53 @@ public abstract class UIElement {
 
     public void setSize(Vector2f size) {
         this.size = size;
+        updateAnchor();
+        onSizeChange();
     }
 
     public void setPos(Vector2f pos) {
         this.pos = pos;
+        updateAnchor();
+        onPosChange();
     }
 
     public void setSize(float x, float y) {
         size.x = x;
         size.y = y;
+        updateAnchor();
+        onSizeChange();
     }
+
+    /**
+     * Don't modify the retuned vector, it dosen't work that way
+     * @return the size of this object
+     */
+    public Vector2f getSize() {
+        return size;
+    }
+    
+    public void setSizeX(float x) {
+        size.x = x;
+        updateAnchor();
+        onSizeChange();
+    }
+    
+    public void setSizeY(float y) {
+        size.y = y;
+        updateAnchor();
+        onSizeChange();
+    }
+    
 
     public void setPos(float x, float y) {
         pos.x = x;
         pos.y = y;
+        updateAnchor();
+        onPosChange();
+    }
+
+    public Vector2f getPos() {
+        return pos.copy().add(posDecal);
     }
 
     public final void repaint(Graphics g) {
@@ -69,7 +110,7 @@ public abstract class UIElement {
     }
 
     public Shape getBoundingBox() {
-        return new Rectangle(pos.x, pos.y, size.x, size.y);
+        return new Rectangle(getPos().x, getPos().y, size.x, size.y);
     }
 
     public final void mouseIn() {
@@ -108,5 +149,33 @@ public abstract class UIElement {
     }
 
     public void update(float dt) {
+    }
+
+    public void setAnchor(Anchor anchor) {
+        this.anchor = anchor;
+        updateAnchor();
+    }
+
+    public Anchor getAnchor() {
+        return anchor;
+    }
+    
+    private void updateAnchor(){
+        switch (anchor) {
+            case TOP_LEFT:
+                posDecal.x = 0;
+                posDecal.y = 0;
+                break;
+            case BOTTOM_LEFT:
+                posDecal.x = 0;
+                posDecal.y = -size.y;
+                break;
+        }
+    }
+    
+    protected void onSizeChange(){
+    }
+    
+    protected void onPosChange(){
     }
 }

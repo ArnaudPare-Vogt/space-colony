@@ -90,6 +90,9 @@ public class PlayState extends BasicGameState {
 
         resourceManager = new ResourceManager();
 
+        UIList list = initStatsMenu();
+        uiElements.add(list);
+
         final UIButton b = new UIButton("BUILD MODE");
         b.setPos(new Vector2f(0, 50));
         uiElements.add(b);
@@ -100,6 +103,7 @@ public class PlayState extends BasicGameState {
 
         b.setOnClickAction(() -> {
             isInBuildMode = !isInBuildMode;
+            list.setVisible(!isInBuildMode);
             if (isInBuildMode) {
                 b.setText("EXIT BUILD MODE");
             } else {
@@ -107,16 +111,43 @@ public class PlayState extends BasicGameState {
             }
             didAction = true;
         });
+    }
 
+    private UIList initStatsMenu() {
         UIList list = new UIList();
-        list.addElement(new UIDescriptionLabel("Stability : ", resourceManager.getStabilityProp()));
-        list.addElement(new UIDescriptionLabel("Stability : ", resourceManager.getStabilityProp()));
-        list.addElement(new UIButton("BUILD MODE"));
+        list.setAnchor(UIElement.Anchor.BOTTOM_LEFT);
 
-        list.setPos(new Vector2f(0, 200));
+        final UIElement[] descLabels = new UIElement[2];
+        descLabels[0] = new UIDescriptionLabel("Stability : ", resourceManager.getStabilityProp());
+        descLabels[1] = new UIDescriptionLabel("O\u00B2 refill : ", resourceManager.getOxygenRegenLevelProp());
 
-        uiElements.add(list);
+        for (UIElement descLabel : descLabels) {
+            list.addElement(descLabel);
+        }
+        final UIButton collapseButton = new UIButton("Collapse");
+        collapseButton.setOnClickAction(new Runnable() {
+            boolean collapsed = false;
+            UIElement[] labels = descLabels;
+            private final String collapseText = "Collapse";
+            private final String openText = "Open";
 
+            @Override
+            public void run() {
+                collapsed = !collapsed;
+                for (UIElement label : labels) {
+                    label.setVisible(!collapsed);
+                }
+                collapseButton.setText(collapsed ? openText : collapseText);
+                list.updateSize();
+            }
+        });
+        list.addElement(collapseButton);
+
+        list.setPos(new Vector2f(0, height * scale));
+
+        list.setDampen(true);
+
+        return list;
     }
 
     @Override
@@ -221,9 +252,11 @@ public class PlayState extends BasicGameState {
 
     private void updateUI(float dt, List<UIElement> uiElementsList) {
         for (UIElement uiElement : uiElementsList) {
-            updateSingleUIElement(dt, uiElement);
-            if(uiElement.getChildrens() != null){
-                updateUI(dt, uiElement.getChildrens());
+            if(uiElement.isVisible()){
+                updateSingleUIElement(dt, uiElement);
+                if (uiElement.getChildrens() != null) {
+                    updateUI(dt, uiElement.getChildrens());
+                }
             }
         }
     }

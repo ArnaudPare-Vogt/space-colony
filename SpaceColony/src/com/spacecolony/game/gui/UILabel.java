@@ -51,9 +51,9 @@ public class UILabel extends UIElement{
     public void render(Graphics g) {
         g.setFont(font);
         g.setColor(background);
-        g.fillRect(pos.x, pos.y, size.x, size.y);
+        g.fillRect(getPos().x, getPos().y, getSize().x, getSize().y);
         g.setColor(fontColor);
-        g.drawString(text, pos.x + padding, pos.y + padding);
+        g.drawString(text, getPos().x + padding, getPos().y + padding);
     }
 
     public void setText(String text) {
@@ -62,7 +62,7 @@ public class UILabel extends UIElement{
     }
 
     public void updateSize(){
-        size.y = font.getHeight(text) + 2 * padding;
-        size.x = font.getWidth(text) + 2 * padding;
+        setSizeY(font.getHeight(text) + 2 * padding);
+        setSizeX(font.getWidth(text) + 2 * padding);
     }
 }

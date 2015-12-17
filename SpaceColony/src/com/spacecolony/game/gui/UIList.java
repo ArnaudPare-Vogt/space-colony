@@ -33,7 +33,23 @@ public class UIList extends UIElement{
     private float padding = 10;
     private Color backgroundColor = new Color(0x55000000);
     
+    private Vector2f targetSize = new Vector2f();
+    /**
+     * Time in seconds it takes to resize
+     */
+    private final float speed = .1f;
+    
+    /**
+     * If resize should be dampened
+     */
+    private boolean dampen = false;
+    private float dx = 0;
+    private float dy = 0;
+    
+    private boolean resizing = false;
+    
     public UIList() {
+        targetSize = getSize().copy();
     }
     
     public void addElement(UIElement element){
@@ -41,52 +57,101 @@ public class UIList extends UIElement{
         updateSize();
     }
     
-    private void updateSize(){
-        size.x = padding;
-        size.y = padding;
+    public void updateSize(){
+        targetSize.x = padding;
+        targetSize.y = padding;
         
         float maxWidth = 0;
         for (Iterator<UIElement> it = elements.iterator(); it.hasNext();) {
             UIElement element = it.next();
-            element.setPos(pos.x + padding, pos.y + size.y);
-            size.y += element.size.y;
-            if(maxWidth < element.size.x){
-                maxWidth = element.size.x;
-            }
-            if(it.hasNext()){
-                size.y += padding;
+            if(element.isVisible()){
+                element.setPos(getPos().x + padding, getPos().y + targetSize.y);
+                targetSize.y += element.getSize().y;
+                if(maxWidth < element.getSize().x){
+                    maxWidth = element.getSize().x;
+                }
+                if(it.hasNext()){
+                    targetSize.y += padding;
+                }
             }
         }
-        size.x += maxWidth;
+        targetSize.x += maxWidth;
         
-        size.x += padding;
-        size.y += padding;
+        targetSize.x += padding;
+        targetSize.y += padding;
+        if(!dampen){
+            setSize(targetSize.copy());
+        }
+        
+        dx = targetSize.x - getSize().x;
+        dy = targetSize.y - getSize().y;
+        
+        resizing = (dx!=0 || dy!=0);
+    }
+    
+    private void updateCompPos(){
+        float height = padding;
+        for (Iterator<UIElement> it = elements.iterator(); it.hasNext();) {
+            UIElement element = it.next();
+            if(element.isVisible()){
+                element.setPos(getPos().x + padding, getPos().y + height);
+                height += element.getSize().y;
+                height += padding;
+            }
+        }
     }
 
     @Override
     public void render(Graphics g) {
         g.setColor(backgroundColor);
-        g.fillRect(pos.x, pos.y, size.x, size.y);
+        g.fillRect(getPos().x, getPos().y, getSize().x, getSize().y);
         
+        g.setWorldClip((int) getPos().x, (int) getPos().y, (int) getSize().x, (int) getSize().y);
         for (UIElement element : elements) {
             element.repaint(g);
         }
+        g.clearWorldClip();
     }
 
     @Override
-    public void setPos(Vector2f pos) {
-        super.setPos(pos);
-        updateSize();
-    }
-
-    @Override
-    public void setPos(float x, float y) {
-        super.setPos(x, y);
+    protected void onPosChange() {
         updateSize();
     }
 
     @Override
     public List<UIElement> getChildrens() {
         return elements;
+    }
+
+    /**
+     * Sets if the resize should be dampened
+     * @param dampen 
+     */
+    public void setDampen(boolean dampen) {
+        this.dampen = dampen;
+        if(!dampen){
+            setSize(targetSize);
+        }
+    }
+    
+    @Override
+    public void update(float dt){
+        if(dampen){
+            if(resizing){
+                Vector2f size = getSize();
+
+                setSizeX(dx*dt*(1/speed) + size.x);
+                setSizeY(dy*dt*(1/speed) + size.y);
+                updateCompPos();
+                if(((targetSize.x - getSize().x) * Math.signum(-dx) > 0) 
+                        && ((targetSize.y - getSize().y) * Math.signum(-dy) > 0)){
+                    setSize(targetSize.copy());
+                    resizing = false;
+                    updateCompPos();
+                }
+            }
+        }else{
+            updateCompPos();
+        }
     }
 }
