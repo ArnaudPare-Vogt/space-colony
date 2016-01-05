@@ -28,6 +28,7 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Vector2f;
 import org.newdawn.slick.util.pathfinding.AStarPathFinder;
+import org.newdawn.slick.util.pathfinding.Mover;
 import org.newdawn.slick.util.pathfinding.Path;
 
 /**
@@ -35,7 +36,7 @@ import org.newdawn.slick.util.pathfinding.Path;
  * @author 1448607
  */
 public class GameCharacter extends Body {
-    
+
     public static final int ORIENTATION_FACE = 0;
     public static final int ORIENTATION_LEFT = 1;
     public static final int ORIENTATION_RIGHT = 2;
@@ -46,6 +47,9 @@ public class GameCharacter extends Body {
     public static final float SELECTED_CHARACTER_NODE_CIRCLE_DIAM = 2;
 
     private static final float SPEED = 32;//in pixels/second
+    
+    public static Mover NOT_IN_SPACE_MOVER = new Mover() {};
+    public static Mover IN_SPACE_MOVER = new Mover() {};
 
     private Sprite[] spriteDirs = new Sprite[]{
         Sprite.Chars.Default.F,
@@ -76,16 +80,21 @@ public class GameCharacter extends Body {
     private Vector2f goalPos;
     private boolean walkingSomewhere = false;
     private boolean working = false;
-    
+
     private int dir = 0;
 
     private boolean selected;
+    
+    private AStarPathFinder pathFinder;
+    
 
     public GameCharacter(float x, float y, Random characterGenerator, Level station) {
         this.station = station;
         setPos(x - CHAR_DEFAULT_SIZE / 2, y - CHAR_DEFAULT_SIZE / 2);
         setSize(CHAR_DEFAULT_SIZE, CHAR_DEFAULT_SIZE);
 
+        pathFinder = new AStarPathFinder(station, 100, false);
+        
         color = POSSIBLE_COLORS[characterGenerator.nextInt(POSSIBLE_COLORS.length)];
     }
 
@@ -138,34 +147,92 @@ public class GameCharacter extends Body {
             } else {
                 addToPos(dp.normalise().scale(SPEED * dt));
             }
-        } else if(!working){
+        } else if (!working) {
             Tile tileStandingOn = station.getNearestTile(pos).getT();
+            tileStandingOn.setOccupied(true);
             if (tileStandingOn.getMachine() != null) {
-                if(tileStandingOn.getMachine().isManned()){
+                if (tileStandingOn.getMachine().isManned()) {
                     setWorking(true);
                     dir = tileStandingOn.getMachine().getOrientation();
                 }
             }
         }
     }
-    
-    private void setWorking(boolean w){
+
+    private void setWorking(boolean w) {
         station.getNearestTile(pos).getT().setWorked(w);
         working = w;
     }
 
+    private void quitTile() {
+        station.getNearestTile(pos).getT().setOccupied(false);
+    }
+
     public void goTo(int x, int y) {
+        if (!station.isInBounds(x, y)) {
+            return;
+        }
+
+        TileInfo currentTile = station.getNearestTile(pos);
+        Coordinate pos;
+        if (goals.isEmpty()) {
+            pos = new Coordinate(currentTile.getX(), currentTile.getY());
+        } else {
+            pos = goals.get(goals.size() - 1);
+        }
+
+        Coordinate goal = new Coordinate(x, y);
+
+        ArrayList<Coordinate> path = null;
+        
         if (station.getTile(x, y) != null) {
-            TileInfo currentTile = station.getNearestTile(pos);
-            Coordinate pos;
-            if (goals.isEmpty()) {
-                pos = new Coordinate(currentTile.getX(), currentTile.getY());
-            } else {
-                pos = goals.get(goals.size() - 1);
+            if (station.getTile(x, y).isOccupied()) {
+                return;//TODO possibly send an error message or walk close?
             }
-            goals.addAll(findGoals(pos, new Coordinate(x, y), station));
+            path = findGoals(pos, goal, NOT_IN_SPACE_MOVER);
+        } else {//we are atemplting to go in space!
+            ArrayList<Coordinate> allHatches = station.getAllHatches();
+            if (allHatches.isEmpty()) {
+                return;//there is no doors to go to space!
+            }
+            ArrayList<ArrayList<Coordinate>> paths = new ArrayList<>();
+
+            for (Iterator<Coordinate> iterator = allHatches.iterator(); iterator.hasNext();) {
+                Coordinate next = iterator.next();
+                ArrayList<Coordinate> curPath = findGoals(pos, next, NOT_IN_SPACE_MOVER);
+                if (curPath == null) {
+                    iterator.remove();
+                } else {
+                    paths.add(curPath);
+                }
+            }
+
+            if (allHatches.isEmpty()) {
+                return;
+            }
+
+            ArrayList<Coordinate> shortestPath = null;
+            int index = 0;
+            for (int i = 0; i < allHatches.size(); i++) {
+                ArrayList<Coordinate> curPath = findGoals(allHatches.get(i), goal, IN_SPACE_MOVER);
+                if (shortestPath == null) {
+                    shortestPath = curPath;
+                } else if (shortestPath.size() > curPath.size()) {
+                    shortestPath = curPath;
+                    index = i;
+                }
+            }
+            
+            path = shortestPath;
+            path.addAll(0, paths.get(index));
+
+        }
+
+        if (path != null) {
+            goals.addAll(path);
             walkingSomewhere = true;
             setWorking(false);
+            quitTile();
         }
     }
 
@@ -177,14 +244,12 @@ public class GameCharacter extends Body {
         }
     }
 
-    private ArrayList<Coordinate> findGoals(Coordinate currentPos, Coordinate finalGoal, Level map) {
+    private ArrayList<Coordinate> findGoals(Coordinate currentPos, Coordinate finalGoal, Mover mover) {
         ArrayList<Coordinate> coords = new ArrayList<>();
 
-        AStarPathFinder pathFinder = new AStarPathFinder(map, 100, false);
-
-        Path p = pathFinder.findPath(null, currentPos.x, currentPos.y, finalGoal.x, finalGoal.y);
+        Path p = pathFinder.findPath(mover, currentPos.x, currentPos.y, finalGoal.x, finalGoal.y);
         if (p == null) {
-            coords.add(currentPos);
+            return null;
         } else {
             for (int i = 0; i < p.getLength(); i++) {
                 coords.add(new Coordinate(p.getX(i), p.getY(i)));
@@ -210,10 +275,10 @@ public class GameCharacter extends Body {
                             || ((dxLast == 0) && (dyLast == -1) && (dxNext == 1) && (dyNext == 0));
                     boolean caseBL = ((dxLast == 1) && (dyLast == 0) && (dxNext == 0) && (dyNext == 1))
                             || ((dxLast == 0) && (dyLast == -1) && (dxNext == -1) && (dyNext == 0));
-                    if ((caseTR && (!map.blocked(pathFinder, coord.x + 1, coord.y - 1)))
-                            || (caseTL && (!map.blocked(pathFinder, coord.x - 1, coord.y - 1)))
-                            || (caseBR && (!map.blocked(pathFinder, coord.x + 1, coord.y + 1)))
-                            || (caseBL && (!map.blocked(pathFinder, coord.x - 1, coord.y + 1)))) {
+                    if ((caseTR && (!station.blocked(pathFinder, coord.x + 1, coord.y - 1)))
+                            || (caseTL && (!station.blocked(pathFinder, coord.x - 1, coord.y - 1)))
+                            || (caseBR && (!station.blocked(pathFinder, coord.x + 1, coord.y + 1)))
+                            || (caseBL && (!station.blocked(pathFinder, coord.x - 1, coord.y + 1)))) {
                         it.remove();
                         continue;
                     }

@@ -16,6 +16,7 @@
  */
 package com.spacecolony.game.data.level;
 
+import com.spacecolony.game.data.level.body.GameCharacter;
 import com.spacecolony.game.data.level.machines.Machine;
 import com.spacecolony.game.util.Coordinate;
 import java.util.ArrayList;
@@ -211,7 +212,13 @@ public class Level implements TileBasedMap {
         }
     }
 
-    private boolean isInBounds(int x, int y) {
+    /**
+     * Specifies if the given x and y coordinates are in the bounds of the level
+     * @param x the x coordinate
+     * @param y the y coordinate
+     * @return if (x,y) is in the level
+     */
+    public boolean isInBounds(int x, int y) {
         return (x >= 0 && y >= 0 && x < width && y < height);
     }
 
@@ -235,11 +242,28 @@ public class Level implements TileBasedMap {
 
     @Override
     public boolean blocked(PathFindingContext context, int tx, int ty) {
-        return getTile(tx, ty) == null;
+        if(context.getMover().equals(GameCharacter.NOT_IN_SPACE_MOVER)){
+            return getTile(tx, ty) == null;
+        }else{
+            return false;
+        }
     }
 
     @Override
     public float getCost(PathFindingContext context, int tx, int ty) {
         return 1;
+    }
+    
+    public ArrayList<Coordinate> getAllHatches(){
+        ArrayList<Coordinate> result = new ArrayList<>();
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                Tile t = tiles[i][j];
+                if(t != null && t.getMachine() != null && t.getMachine() == Machine.SIMPLE_HATCH){
+                    result.add(new Coordinate(i, j));
+                }
+            }
+        }
+        return result;
     }
 }

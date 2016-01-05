@@ -31,6 +31,7 @@ public class Tile {
     private int tileIndex = 0;
     
     private boolean worked = false;
+    private boolean occupied = false;
     
     private Machine machine;
 
@@ -87,5 +88,13 @@ public class Tile {
 
     public boolean isWorked() {
         return worked;
+    }
+
+    public void setOccupied(boolean occupied) {
+        this.occupied = occupied;
+    }
+
+    public boolean isOccupied() {
+        return occupied;
     }
 }

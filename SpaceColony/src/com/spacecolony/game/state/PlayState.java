@@ -170,17 +170,10 @@ public class PlayState extends BasicGameState {
         list.setPos(width * scale, 0);
         list.setAnchor(UIElement.Anchor.TOP_RIGHT);
 
-        final UIButton[] descLabels = new UIButton[2];
-        descLabels[0] = new UIButton("Controll Center");
-        descLabels[1] = new UIButton("O2 Generator");
-
-        descLabels[0].setOnClickAction(()->{
-            PlayState.this.buildMachineAtSelectedPos(Machine.COMMAND_POST);
-        });
-        
-        descLabels[1].setOnClickAction(()->{
-            PlayState.this.buildMachineAtSelectedPos(Machine.O2_GENERATOR);
-        });
+        final UIButton[] descLabels = new UIButton[3];
+        addMachineButton(Machine.COMMAND_POST, 0, descLabels);
+        addMachineButton(Machine.O2_GENERATOR, 1, descLabels);
+        addMachineButton(Machine.SIMPLE_HATCH, 2, descLabels);
         
         for (UIElement descLabel : descLabels) {
             list.addElement(descLabel);
@@ -189,6 +182,13 @@ public class PlayState extends BasicGameState {
         list.getVisibleProprety().bind(isInMachineUpgradeMode);
 
         return list;
+    }
+    
+    private void addMachineButton(Machine m, int i, UIButton[] array){
+        array[i] = new UIButton(m.getName());
+        array[i].setOnClickAction(()->{
+            PlayState.this.buildMachineAtSelectedPos(m);
+        });
     }
 
     @Override
@@ -280,7 +280,7 @@ public class PlayState extends BasicGameState {
             if (plIn.clicked(PlayerInput.MOUSE_RIGHT_BUTTON)) {
                 if (selectedCharacter != null) {
                     TileInfo tf = lvl.getNearestTile(plIn.getMousePosInGameSpace());
-                    if (tf != null && tf.getT() != null) {
+                    if (tf != null) {
                         selectedCharacter.goTo(tf.getX(), tf.getY());
                     }
                 }

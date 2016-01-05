@@ -36,6 +36,10 @@ public class Machine {
         rm.stabilityAugment(1);
     });
     
+    public static final Machine SIMPLE_HATCH = new Machine("Hatch", 70, false, false, Sprite.Machines.SIMPLE_HATCH, Sprite.Machines.TopLayer.SIMPLE_HATCH, -1, (rm)->{
+       //maybe small o2 leak when the hatch is open?
+    });
+    
     private String name;
     private int totalHP;
     private boolean manned;
